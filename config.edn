@@ -1,0 +1,1 @@
+{:max-path 300, :min-path 50, :maze-cols #{33 22 10}, :maze-rows [10 100], :maze-algo "aldous-broder", :maze-gen-num "800", :maze-cell-size [20 80], :maze-path-len [50 100]}

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Scene?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.stage.Stage?>
+
+<Stage xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <scene>
+        <Scene>
+            <AnchorPane prefHeight="497.0" prefWidth="571.0">
+            <children>
+               <Text layoutX="12.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="迷宫算法：" wrappingWidth="72.3720703125" />
+               <Text layoutX="226.0" layoutY="27.0" strokeType="OUTSIDE" strokeWidth="0.0" text="行数：" wrappingWidth="48.3720703125" />
+               <TextField layoutX="274.0" layoutY="9.0" prefHeight="27.0" prefWidth="44.0">
+                  <tooltip>
+                     <Tooltip text="生成的迷宫行数:&#10;可以使用数字，比如5  生成固定行数&#10;或者范围1-10 生成行数为随机1-10&#10;或者逗号隔开的多个数字1,2,5,3  生成行数为随机挑选一个数字" />
+                  </tooltip>
+               </TextField>
+               <Text layoutX="335.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="列数：" wrappingWidth="48.3720703125" />
+               <TextField layoutX="383.0" layoutY="10.0" prefHeight="27.0" prefWidth="44.0" />
+               <Text layoutX="14.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="单元格大小：" wrappingWidth="93.3720703125" />
+               <TextField layoutX="107.0" layoutY="40.0" prefHeight="27.0" prefWidth="44.0" />
+               <Text layoutX="151.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="(px)" />
+               <Text layoutX="545.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" wrappingWidth="159.3720703125" />
+               <Button layoutX="412.0" layoutY="40.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="图片保存目录：" />
+               <Button contentDisplay="RIGHT" layoutX="175.0" layoutY="40.0" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="开始标记">
+                  <graphic>
+                     <ImageView fitHeight="29.0" fitWidth="37.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@../../../../../../../../home/ntestu/code/maze-tower/resources/start.png" />
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+               <Button contentDisplay="RIGHT" layoutX="282.0" layoutY="40.0" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="结束标记">
+                  <graphic>
+                     <ImageView fitHeight="29.0" fitWidth="41.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@end.png" />
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+               <Button layoutX="414.0" layoutY="144.0" mnemonicParsing="false" text="生成" />
+               <Button layoutX="410.0" layoutY="407.0" mnemonicParsing="false" text="生成迷宫塔" />
+               <Text layoutX="32.0" layoutY="425.0" strokeType="OUTSIDE" strokeWidth="0.0" text="迷宫塔层数：" wrappingWidth="109.3720703125" />
+               <TextField layoutX="129.0" layoutY="407.0" prefHeight="27.0" prefWidth="50.0" />
+               <Text layoutX="129.0" layoutY="462.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" wrappingWidth="99.3720703125" />
+               <Button layoutX="36.0" layoutY="444.0" mnemonicParsing="false" text="最顶层文件" />
+               <VBox layoutX="32.0" layoutY="142.0">
+                  <children>
+                     <ScrollPane prefHeight="178.0" prefWidth="349.0">
+                        <content>
+                           <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                        </content>
+                     </ScrollPane>
+                     <HBox prefWidth="200.0">
+                        <children>
+                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="文件名:" />
+                           <TextField maxWidth="3.3333333333333333E24" prefWidth="3333.0">
+                              <HBox.margin>
+                                 <Insets left="10.0" />
+                              </HBox.margin>
+                           </TextField>
+                        </children>
+                     </HBox>
+                     <HBox prefWidth="200.0">
+                        <children>
+                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="路径：" />
+                           <TextField prefWidth="33333.0">
+                              <HBox.margin>
+                                 <Insets left="10.0" />
+                              </HBox.margin>
+                           </TextField>
+                        </children>
+                     </HBox>
+                  </children>
+               </VBox>
+               <Text layoutX="439.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="路径长度:" wrappingWidth="56.3720703125" />
+               <TextField layoutX="495.0" layoutY="10.0" prefHeight="27.0" prefWidth="71.0" />
+               <Button layoutX="411.0" layoutY="218.0" mnemonicParsing="false" text="上一个" />
+               <Button layoutX="411.0" layoutY="266.0" mnemonicParsing="false" text="下一个" />
+               <Button layoutX="414.0" layoutY="181.0" mnemonicParsing="false" text="删除所有" />
+               <ComboBox editable="true" layoutX="409.0" layoutY="84.0" prefHeight="27.0" prefWidth="60.0" />
+               <ChoiceBox layoutX="76.0" layoutY="9.0" prefWidth="150.0" />
+               <Text layoutX="333.0" layoutY="102.0" strokeType="OUTSIDE" strokeWidth="0.0" text="生成数量：" wrappingWidth="95.3720703125" />
+            </children></AnchorPane>
+        </Scene>
+    </scene>
+</Stage>

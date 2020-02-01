@@ -76,7 +76,7 @@
 (fs/mkdir "maze_imgs/")
 (fs/delete "maze.txt")
 
-#_(doseq [idx (range 0 10)]
+(doseq [idx (range 0 10)]
   (let [[m path] (gen-in-range-path-maze 50 200)
         fname (str "maze_imgs/maze_" idx ".jpg")]
     (spit "maze.txt" (str fname " " path "\n") :append true)

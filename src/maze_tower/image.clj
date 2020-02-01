@@ -31,13 +31,13 @@
                 nil)))
 
 (defn draw-cell-walls [^Graphics2D g cell _ x1 y1 x2 y2]
-  (when-not (:grid/north cell) (.drawLine g x1 y1 x2 y1))
-  (when-not (:grid/west cell) (.drawLine g x1 y1 x1 y2))
+  (when-not (::grid/north cell) (.drawLine g x1 y1 x2 y1))
+  (when-not (::grid/west cell) (.drawLine g x1 y1 x1 y2))
 
-  (when-not (grid/linked? cell (:grid/east cell)) (.drawLine g x2 y1 x2 y2))
-  (when-not (grid/linked? cell (:grid/south cell)) (.drawLine g x1 y2 x2 y2)))
+  (when-not (grid/linked? cell (::grid/east cell)) (.drawLine g x2 y1 x2 y2))
+  (when-not (grid/linked? cell (::grid/south cell)) (.drawLine g x1 y2 x2 y2)))
 
-(defn image-grid [{:keys [grid/rows grid/cols] :as grid} cell-size]
+(defn image-grid [{:keys [::grid/rows ::grid/cols] :as grid} cell-size]
   (let [img-width (inc (* cell-size cols))
         img-height (inc (* cell-size rows))
         background Color/white
