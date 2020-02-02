@@ -40,6 +40,7 @@
 (defn image-view
   "从资源或文件中加载图片，如果找不到文件显示空白"
   [{:keys [fx/context image opts]}]
+  (prn "image view image pre:" image)
   (merge {:fx/type :image-view}
          (when image
            (when-let [is (util/file-istream image)]
@@ -225,29 +226,31 @@
                            }]}]})
 
 (defn maze-pic-pane [{:keys [fx/context]}]
-  {:fx/type :v-box
-   :spacing 10
-   :children [{:fx/type :scroll-pane
-               :v-box/vgrow :always
-               :content {:fx/type image-view
-                         :image (fx/sub context subs/curr-image-path)}}
-              {:fx/type :h-box
-               :max-width ##Inf
-               :spacing 10
-               :children [{:fx/type :label
-                           :text "文件名:"}
-                          {:fx/type :text-field
-                           :h-box/hgrow :always
-                           :editable false
-                           :text (fx/sub context subs/curr-image-path)}]}
-              {:fx/type :h-box
-               :spacing 10
-               :children [{:fx/type :label
-                           :text "迷宫路径："}
-                          {:fx/type :text-field
-                           :h-box/hgrow :always
-                           :editable false
-                           :text (fx/sub context subs/curr-maze-route)}]}]})
+  (let [image-path (fx/sub context subs/curr-image-path)]
+    (prn "new image path:" image-path)
+    {:fx/type :v-box
+     :spacing 10
+     :children [{:fx/type :scroll-pane
+                 :v-box/vgrow :always
+                 :content {:fx/type image-view
+                           :image image-path}}
+                {:fx/type :h-box
+                 :max-width ##Inf
+                 :spacing 10
+                 :children [{:fx/type :label
+                             :text "文件名:"}
+                            {:fx/type :text-field
+                             :h-box/hgrow :always
+                             :editable false
+                             :text image-path}]}
+                {:fx/type :h-box
+                 :spacing 10
+                 :children [{:fx/type :label
+                             :text "迷宫路径："}
+                            {:fx/type :text-field
+                             :h-box/hgrow :always
+                             :editable false
+                             :text (fx/sub context subs/curr-maze-route)}]}]}))
 
 (defn root [_]
   {:fx/type :stage
