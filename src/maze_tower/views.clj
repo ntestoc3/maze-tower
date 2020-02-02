@@ -37,16 +37,17 @@
                       :text tip}})
          opts))
 
-(defn image-view
-  "从资源或文件中加载图片，如果找不到文件显示空白"
-  [{:keys [fx/context image opts]}]
-  (prn "image view image pre:" image)
-  (merge {:fx/type :image-view}
-         (when image
-           (when-let [is (util/file-istream image)]
-             {:image {:is is}}))
-         opts
-         ))
+(defmacro image-view
+  "从资源或文件中加载图片，如果找不到文件显示空白
+  如果使用函数，会出现image的sub更新后，但是不会调用这个函数进行更新，
+  使用宏就等于嵌入代码，可以正常更新"
+  [image & opts]
+  `(merge {:fx/type :image-view}
+          (when ~image
+            (when-let [is# (util/file-istream ~image)]
+              {:image {:is is#}}))
+          ~(apply hash-map opts)
+          ))
 
 (defn image-button
   "图片按钮
@@ -56,10 +57,9 @@
   (merge {:fx/type :button
           :graphic-text-gap 10
           :content-display content-display
-          :graphic {:fx/type image-view
-                    :opts {:fit-width 20
-                           :fit-height 20}
-                    :image image}
+          :graphic (image-view image
+                                 :fit-width 20
+                                 :fit-height 20)
           :on-action on-action
           :text text}
          opts))
@@ -209,14 +209,6 @@
                            :value-change-event ::events/pic-index-change
                            :opts {:pref-width 40}
                            :value-converter :long
-                           :filter (fn [change]
-                                     (let [new-txt (.getControlNewText change)]
-                                       (try
-                                         (let [v (Integer/parseInt new-txt)
-                                               total-pics (config/get-config :curr-pic-index)]
-                                           (when (<= 0 v (dec total-pics))
-                                             change))
-                                         (catch Exception e nil))))
                            :tip "当前显示迷宫图片的索引"
                            :key :curr-pic-index}
                           {:fx/type image-button
@@ -227,15 +219,13 @@
 
 (defn maze-pic-pane [{:keys [fx/context]}]
   (let [image-path (fx/sub context subs/curr-image-path)]
-    (prn "new image path:" image-path)
     {:fx/type :v-box
      :spacing 10
      :children [{:fx/type :scroll-pane
+                 :pannable true
                  :v-box/vgrow :always
-                 :content {:fx/type image-view
-                           :image image-path}}
+                 :content (image-view image-path)}
                 {:fx/type :h-box
-                 :max-width ##Inf
                  :spacing 10
                  :children [{:fx/type :label
                              :text "文件名:"}
@@ -259,8 +249,10 @@
    :title "迷宫塔"
    :scene {:fx/type :scene
            :root {:fx/type  :border-pane
-                  :min-width 850
-                  :min-height 500
+                  :min-width 900
+                  :min-height 600
+                  :pref-width 900
+                  :pref-height 600
                   :top {:fx/type maze-config-form
                         :border-pane/margin 10
                         }
@@ -270,6 +262,6 @@
                   :center {:fx/type maze-pic-pane
                            :border-pane/margin 10
                            }
-                  :bottom {:fx/type log-form
-                           :border-pane/margin 10}
+                  ;; :bottom {:fx/type log-form
+                  ;;          :border-pane/margin 10}
                   }}})
