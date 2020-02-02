@@ -56,15 +56,15 @@
 
 (defn gen-maze
   [{:keys [algo rows cols start-mark end-mark]}]
-  (let [width (util/range-value cols)
-        height (util/range-value rows)
-        [start end] (rand-2-point width height)
+  (let [rows (util/range-value rows)
+        cols (util/range-value cols)
+        [start end] (rand-2-point rows cols)
         algo (maze-algo/algorithm-fn algo {:distances start
                                            :path-to end
                                            :start-mark start-mark
                                            :end-mark end-mark})]
 
-    (-> (grid/make-grid width height)
+    (-> (grid/make-grid rows cols)
         algo)))
 
 (defn gen-in-path-len-maze

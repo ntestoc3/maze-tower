@@ -39,7 +39,7 @@
 
 (defmacro image-view
   "从资源或文件中加载图片，如果找不到文件显示空白
-  如果使用函数，会出现image的sub更新后，但是不会调用这个函数进行更新，
+  如果使用函数，会出现image的fx/sub更新后，但是不会调用这个函数进行更新，
   使用宏就等于嵌入代码，可以正常更新"
   [image & opts]
   `(merge {:fx/type :image-view}
@@ -58,8 +58,8 @@
           :graphic-text-gap 10
           :content-display content-display
           :graphic (image-view image
-                                 :fit-width 20
-                                 :fit-height 20)
+                               :fit-width 20
+                               :fit-height 20)
           :on-action on-action
           :text text}
          opts))
@@ -139,12 +139,12 @@
                           {:fx/type image-button
                            :image  (fx/sub context :maze-start-pic)
                            :content-display :right
-                           :on-action {:event/type ::events/add-data}
+                           :on-action {:event/type ::events/change-start-mark}
                            :text "开始标记"}
                           {:fx/type image-button
                            :image  (fx/sub context :maze-end-pic)
                            :content-display :right
-                           :on-action {:event/type ::events/add-data}
+                           :on-action {:event/type ::events/change-end-mark}
                            :text "结束标记"}]}
               {:fx/type :h-box
                :spacing 10
@@ -197,7 +197,7 @@
                :v-box/margin {:top 50}
                :opts {:max-width ##Inf}
                :image "del.png"
-               :on-action {:event/type ::events/del-all-maze-pid}
+               :on-action {:event/type ::events/del-all-maze-pic}
                :text "清空"}
               {:fx/type :h-box
                :v-box/margin {:top 50}

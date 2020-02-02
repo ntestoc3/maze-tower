@@ -38,8 +38,8 @@
 
 (defn add-config!
   "添加配置项到全局配置"
-  [k v]
-  (swap! config assoc k v))
+  [& kvs]
+  (apply swap! config assoc kvs))
 
 (defn add-in-config!
   "添加配置项到全局配置"
