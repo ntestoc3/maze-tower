@@ -3,7 +3,8 @@
             [maze-tower.grid :as grid]
             [maze-tower.image :as image]
             [me.raynes.fs :as fs]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [maze-tower.util :as util])
   (:import [javax.imageio ImageIO]))
 
 (defn run-and-render [algorithm grid-size render-fn]
@@ -54,45 +55,60 @@
       [p1 p2])))
 
 (defn gen-maze
-  [width height]
-  (let [[start end] (rand-2-point width height)
-        algo (maze-algo/algorithm-fn "recursive-backtracker" {:distances start
-                                                              :path-to end
-                                                              })]
+  [{:keys [algo rows cols start-mark end-mark]}]
+  (let [width (util/range-value cols)
+        height (util/range-value rols)
+        [start end] (rand-2-point width height)
+        algo (maze-algo/algorithm-fn algo {:distances start
+                                           :path-to end
+                                           :start-mark start-mark
+                                           :end-mark end-mark})]
 
     (-> (grid/make-grid width height)
         algo)))
 
-(defn gen-in-range-path-maze
-  [min-path max-path]
-  (let [m (gen-maze (+ 10 (rand-int 90))
-                    (+ 10 (rand-int 90)))
+(defn gen-in-path-len-maze
+  "生成寻路路径长度在path-len指定范围的迷宫"
+  [{:keys [path-len]
+    :or {path-len [50 200]} :as maze-conf}]
+  (let [m (gen-maze maze-conf)
         path (get-route m)]
-    (if (<= min-path (count path) max-path)
+    (if (util/in-range? (count path) path-len)
       [m path]
-      (recur min-path max-path))))
+      (recur maze-conf))))
 
-(fs/delete-dir "maze_imgs/")
-(fs/mkdir "maze_imgs/")
-(fs/delete "maze.txt")
+(defn gen-maze-and-save
+  "生成一个迷宫，并保存迷宫图片，返回迷宫图片和寻路路径"
+  [{:keys [cell-size out-path] :as maze-conf}]
+  (let [[m path] (gen-in-path-len-maze maze-conf)
+        cell-size (util/range-value cell-size)]
+    (write-grid-to-image-file m out-path cell-size)
+    {:image-path out-path
+     :route path}))
 
-(doseq [idx (range 0 10)]
-  (let [[m path] (gen-in-range-path-maze 50 200)
-        fname (str "maze_imgs/maze_" idx ".jpg")]
-    (spit "maze.txt" (str fname " " path "\n") :append true)
-    (write-grid-to-image-file m fname (+ 20 (rand-int 80)))
-    ))
+(defn gen-mazes
+  ":output-start-index 为输出图片文件的开始索引编号"
+  [{:keys [count output-dir output-start-index] :as maze-conf}]
+  (fs/mkdirs output-dir)
+  (map (fn [idx]
+         (let [out-path (-> (fs/file output-dir (str "maze_" idx ".jpg"))
+                             str)]
+           (gen-maze-and-save (merge maze-conf
+                                     {:out-path out-path}))))
+       (range output-start-index
+              (+ output-start-index count))))
 
-;; (def m2 (gen-maze 50 50))
-;; (write-grid-to-image-file m2 "./maze/test.jpg" (+ 20 (rand-int 80)))
+(comment
 
-;; (doseq [d ds1]
-;;   (println d))
+  (gen-mazes {:count 5
+              :output-dir "maze_images"
+              :output-start-index 10
+              :cell-size [10 30]
+              :algo (first (keys maze-algo/algorithm-functions))
+              :rows [20 100]
+              :cols 30
+              :start-mark "./resources/start.png"
+              :end-mark "./resources/end.png"})
 
-;; (doseq [[pos step] steps]
-;;   (println step ":" pos ))
 
-;; (def m3 (last (recursive-backtracker-seq m1)))
-;; (def d1 (last (distances-seq m3 [0 0])))
-;; (def p1 (last (path-seq m3 d1 [9 9])))
-;; (write-grid-to-image-file m3 "test.jpg" 8)
+  )

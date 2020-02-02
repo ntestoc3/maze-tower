@@ -304,6 +304,8 @@
 
 (defn algorithm-fn [name options]
   (let [algorithm #(last ((algorithm-functions name) %))
+        start-mark (get options :start-mark "跑步.png")
+        end-mark (get options :end-mark "奖杯.png")
         analyze-distances (fn [maze] (last (distances-seq maze (:distances options))))
         analyze-path (fn [maze] (last (path-seq maze (analyze-distances maze) (:path-to options))))
         analyze-longest-path (fn [maze]
@@ -323,6 +325,6 @@
             analysis (analyze maze)
             analysis (assoc analysis ::g/changed-cells (into #{} (filter vector? (keys analysis))))]
         (-> (g/grid-annotate-cells maze
-                                   {:image {start "跑步.png"
-                                            end "奖杯.png"}})
+                                   {:image {start start-mark
+                                            end end-mark}})
             (assoc :analysis analysis))))))

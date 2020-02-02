@@ -230,7 +230,7 @@
    :children [{:fx/type :scroll-pane
                :v-box/vgrow :always
                :content {:fx/type image-view
-                         :image (fx/sub context :curr-image-path)}}
+                         :image (fx/sub context subs/curr-image-path)}}
               {:fx/type :h-box
                :max-width ##Inf
                :spacing 10
@@ -239,7 +239,7 @@
                           {:fx/type :text-field
                            :h-box/hgrow :always
                            :editable false
-                           :text (fx/sub context :curr-image-path)}]}
+                           :text (fx/sub context subs/curr-image-path)}]}
               {:fx/type :h-box
                :spacing 10
                :children [{:fx/type :label
@@ -247,7 +247,7 @@
                           {:fx/type :text-field
                            :h-box/hgrow :always
                            :editable false
-                           :text (fx/sub context :curr-maze-route)}]}]})
+                           :text (fx/sub context subs/curr-maze-route)}]}]})
 
 (defn root [_]
   {:fx/type :stage

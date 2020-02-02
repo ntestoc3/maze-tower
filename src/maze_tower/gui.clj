@@ -23,14 +23,12 @@
           :maze-path-len (config/get-config :maze-path-len [50 100])
           :maze-cell-size (config/get-config :maze-cell-size [20 80])
           :maze-pics-dir (config/get-config :maze-pics-dir "maze_images/")
-          :maze-start-pic (config/get-config :maze-start-pic "start.png")
-          :maze-end-pic (config/get-config :maze-end-pic "end.png")
+          :maze-start-pic (config/get-config :maze-start-pic "resources/start.png")
+          :maze-end-pic (config/get-config :maze-end-pic "resources/end.png")
           :maze-gen-num (config/get-config :maze-gen-num 10)
           :tower-level (config/get-config :tower-level 30)
           :maze-pic-infos (config/get-config :maze-pic-infos [])
-          :curr-pic-index (config/get-config :curr-pic-index)
-          :curr-image-path (config/get-config :curr-image-path)
-          :curr-maze-route (config/get-config :curr-maze-route)
+          :curr-pic-index (config/get-config :curr-pic-index 0)
           :showing true}
          cache/lru-cache-factory)))
 

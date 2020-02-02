@@ -9,7 +9,7 @@
            java.awt.Desktop
            ))
 
-(defn in-range
+(defn in-range-int
   "数字n在min-max范围内，如果超过则取相应的最大最小值"
   [n min max]
   (cond
@@ -51,6 +51,21 @@
          (rand-int (inc (- y x)))))
 
     :else range-v))
+
+(defn in-range?
+  "数字i是否在范围值range-v中 "
+  [i range-v]
+  {:pre [(int? i)
+         (range? range-v)]}
+  (cond
+    (set? range-v)
+    (range-v i)
+
+    (seqable? range-v)
+    (let [[x y] range-v]
+      (<= x i y))
+
+    :else (= i range-v)))
 
 (defn parse-range
   "解析范围数字,可以是单个数字，或者是x-y之间的范围,或者是a,b,c数字集合"
@@ -125,5 +140,11 @@
   (range->str [2 6])
 
   (range->str #{1 3 65 8})
+
+  (in-range? 3 #{1 3 8 5})
+
+  (in-range? 10 [1 10])
+
+  (in-range? 2 1)
 
   )

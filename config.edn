@@ -1,1 +1,1 @@
-{:min-path 50, :curr-pic-index 0, :default 0, :maze-algo "hunt-and-kill", :maze-cell-size [20 80], :maze-rows [10 100], :max-path 300, :maze-path-len [50 100], :maze-cols 33, :maze-gen-num 10}
+{}

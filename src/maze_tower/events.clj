@@ -1,6 +1,7 @@
 (ns maze-tower.events
   (:require [cljfx.api :as fx]
             [maze-tower.config :as config]
+            [maze-tower.maze :as maze]
             [maze-tower.subs :as subs]
             [clojure.java.io :as io]
             [maze-tower.util :as util])
@@ -88,7 +89,7 @@
 
 (defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]
   (let [total-pics (fx/sub context subs/pics-count)
-        new-idx (util/in-range event 0 (dec total-pics))]
+        new-idx (util/in-range-int event 0 (dec total-pics))]
     (prn "new-idx:" new-idx)
     (config/add-config! key new-idx)
     {:context (fx/swap-context context assoc key new-idx)}))
@@ -110,3 +111,17 @@
 (defmethod event-handler ::stop [{:keys [fx/context fx/event]}]
   (config/save-config!))
 
+(defmethod event-handler ::gen-maze [{:keys [fx/context fx/event]}]
+  (let [mazes (maze/gen-mazes {:count (fx/sub context :maze-gen-num)
+                               :output-dir (fx/sub context :maze-pics-dir)
+                               :cell-size (fx/sub context :maze-cell-size)
+                               :path-len (fx/sub context :maze-path-len)
+                               :algo (fx/sub context :maze-algo)
+                               :rows (fx/sub context :maze-rows)
+                               :cols (fx/sub context :maze-cols)
+                               :output-start-index (-> (fx/sub context :maze-pic-infos)
+                                                       count)
+                               :start-mark (fx/sub context :maze-start-pic)
+                               :end-mark (fx/sub context :maze-end-pic)})]
+    (config/add-config! :maze-pic-infos mazes)
+    {:context (fx/swap-context context assoc :maze-pic-infos mazes)}))
