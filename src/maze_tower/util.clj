@@ -12,10 +12,10 @@
 (defn file-istream
   "获取文件的输入流"
   [file-path]
-  (-> (if (fs/file? file-path)
-        (fs/file file-path)
-        (io/resource file-path))
-      io/input-stream))
+  (some-> (if (fs/file? file-path)
+            (fs/file file-path)
+            (io/resource file-path))
+          io/input-stream))
 
 (defn range?
   [range-v]

@@ -4,7 +4,8 @@
             [clojure.java.io :as io]
             [maze-tower.events :as events]
             [maze-tower.util :as util]
-            [maze-tower.maze-algo :as maze-algo])
+            [maze-tower.maze-algo :as maze-algo]
+            [maze-tower.subs :as subs])
   (:import javafx.util.StringConverter))
 
 (def range-value-converter
@@ -30,6 +31,32 @@
            {:tooltip {:fx/type :tooltip
                       :show-duration [10 :s]
                       :text tip}})
+         opts))
+
+(defn image-view
+  "从资源或文件中加载图片，如果找不到文件显示空白"
+  [{:keys [fx/context image opts]}]
+  (merge {:fx/type :image-view}
+         (when image
+           (when-let [is (util/file-istream image)]
+             {:image {:is is}}))
+         opts
+         ))
+
+(defn image-button
+  "图片按钮
+  `content-display` 图片的显示位置"
+  [{:keys [fx/context text image on-action content-display opts]
+    :or {content-display :left}}]
+  (merge {:fx/type :button
+          :graphic-text-gap 10
+          :content-display content-display
+          :graphic {:fx/type image-view
+                    :opts {:fit-width 20
+                           :fit-height 20}
+                    :image image}
+          :on-action on-action
+          :text text}
          opts))
 
 (defn log-form [_]
@@ -104,24 +131,14 @@
 或者范围，比如20-100 生成20-100之间的随机单元格大小(包含20和100)
 或者逗号隔开的多个数字，比如20,30,50,100 生成的单元格大小为从中随机挑选一个数字"
                            :key :maze-cell-size}
-                          {:fx/type :button
-                           :graphic-text-gap 10
+                          {:fx/type image-button
+                           :image  (fx/sub context :maze-start-pic)
                            :content-display :right
-                           :graphic {:fx/type :image-view
-                                     :fit-width 20
-                                     :fit-height 20
-                                     :image {:is (-> (fx/sub context :maze-start-pic)
-                                                     util/file-istream)} }
                            :on-action {:event/type ::events/add-data}
                            :text "开始标记"}
-                          {:fx/type :button
-                           :graphic-text-gap 10
+                          {:fx/type image-button
+                           :image  (fx/sub context :maze-end-pic)
                            :content-display :right
-                           :graphic {:fx/type :image-view
-                                     :fit-width 20
-                                     :fit-height 20
-                                     :image {:is (-> (fx/sub context :maze-end-pic)
-                                                     util/file-istream)} }
                            :on-action {:event/type ::events/add-data}
                            :text "结束标记"}]}
               {:fx/type :h-box
@@ -145,53 +162,61 @@
                           {:fx/type :label
                            :max-height ##Inf
                            :text "迷宫图片保存文件夹:"}
-                          {:fx/type :text-field
-                           :max-height ##Inf
-                           :max-width ##Inf
-                           :editable false
-                           :text (fx/sub context :maze-pics-dir)}
-                          {:fx/type :button
-                           :graphic {:fx/type :image-view
-                                     :fit-width 20
-                                     :fit-height 20
-                                     :image {:is (-> (io/resource "open_dir.png")
-                                                     io/input-stream)} }
-                           :on-action {:event/type ::events/change-pic-dir}}]}]})
+                          {:fx/type :h-box
+                           :h-box/hgrow :always
+                           :children [{:fx/type :text-field
+                                       :max-height ##Inf
+                                       :h-box/hgrow :always
+                                       :editable false
+                                       :text (fx/sub context :maze-pics-dir)}
+                                      {:fx/type image-button
+                                       :image  "open_dir.png"
+                                       :on-action {:event/type ::events/change-pic-dir}}]}
+                          {:fx/type :h-box
+                           :children [{:fx/type :label
+                                       :max-height ##Inf
+                                       :text "迷宫图片总数："}
+                                      {:fx/type :label
+                                       :max-height ##Inf
+                                       :text (fx/sub context subs/pics-count)}]}]}]})
 
 (defn function-form [_]
   {:fx/type :v-box
-   :children [{:fx/type :button
+   :children [{:fx/type image-button
                :on-action {:event/type ::events/gen-maze}
-               :max-width ##Inf
+               :image "gen.png"
+               :opts {:max-width ##Inf}
                :text "生成"}
-              {:fx/type :button
+              {:fx/type image-button
                :v-box/margin {:top 50}
-               :max-width ##Inf
+               :opts {:max-width ##Inf}
+               :image "del.png"
                :on-action {:event/type ::events/del-all-maze-pid}
-               :text "删除所有"}
-              {:fx/type :button
+               :text "清空"}
+              {:fx/type image-button
                :v-box/margin {:top 50}
-               :max-width ##Inf
+               :opts {:max-width ##Inf}
+               :image "prev.png"
                :on-action {:event/type ::events/prev-maze-pic}
                :text "上一个"}
-              {:fx/type :button
+              {:fx/type image-button
                :v-box/margin {:top 50}
-               :max-width ##Inf
+               :opts {:max-width ##Inf}
+               :image "next.png"
                :on-action {:event/type ::events/next-maze-pic}
                :text "下一个"}
               ]})
 
 (defn maze-pic-pane [{:keys [fx/context]}]
   {:fx/type :v-box
+   :spacing 10
    :children [{:fx/type :scroll-pane
                :v-box/vgrow :always
-               :content {:fx/type :image-view
-                         :image {:is (-> (fx/sub context :curr-image-path)
-                                         io/file
-                                         io/input-stream)}
-                         }}
+               :content {:fx/type image-view
+                         :image (fx/sub context :curr-image-path)}}
               {:fx/type :h-box
                :max-width ##Inf
+               :spacing 10
                :children [{:fx/type :label
                            :text "文件名:"}
                           {:fx/type :text-field
@@ -199,8 +224,9 @@
                            :editable false
                            :text (fx/sub context :curr-image-path)}]}
               {:fx/type :h-box
+               :spacing 10
                :children [{:fx/type :label
-                           :text "路径："}
+                           :text "迷宫路径："}
                           {:fx/type :text-field
                            :h-box/hgrow :always
                            :editable false
@@ -215,7 +241,15 @@
            :root {:fx/type  :border-pane
                   :min-width 850
                   :min-height 500
-                  :top {:fx/type maze-config-form}
-                  :right {:fx/type function-form}
-                  :center {:fx/type maze-pic-pane}
+                  :top {:fx/type maze-config-form
+                        :border-pane/margin 10
+                        }
+                  :right {:fx/type function-form
+                          :border-pane/margin 10
+                          }
+                  :center {:fx/type maze-pic-pane
+                           :border-pane/margin 10
+                           }
+                  :bottom {:fx/type log-form
+                           :border-pane/margin 10}
                   }}})
