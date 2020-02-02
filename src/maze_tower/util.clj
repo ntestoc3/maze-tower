@@ -9,6 +9,14 @@
            java.awt.Desktop
            ))
 
+(defn in-range
+  "数字n在min-max范围内，如果超过则取相应的最大最小值"
+  [n min max]
+  (cond
+    (<= n min) min
+    (>= n max) max
+    :else n))
+
 (defn file-istream
   "获取文件的输入流"
   [file-path]

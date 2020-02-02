@@ -2,7 +2,8 @@
   (:require [cljfx.api :as fx]
             [maze-tower.config :as config]
             [maze-tower.subs :as subs]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [maze-tower.util :as util])
   (:import javafx.stage.FileChooser
            javafx.stage.FileChooser$ExtensionFilter
            javafx.stage.DirectoryChooser
@@ -84,6 +85,27 @@
 (defmethod event-handler ::value-changed [{:keys [fx/context fx/event key]}]
   (config/add-config! key event)
   {:context (fx/swap-context context assoc key event)})
+
+(defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]
+  (let [total-pics (fx/sub context subs/pics-count)
+        new-idx (util/in-range event 0 (dec total-pics))]
+    (prn "new-idx:" new-idx)
+    (config/add-config! key new-idx)
+    {:context (fx/swap-context context assoc key new-idx)}))
+
+(defmethod event-handler ::prev-maze-pic [{:keys [fx/context fx/event]}]
+  (let [idx (-> (fx/sub context :curr-pic-index)
+                dec)]
+    {:dispatch {:event/type ::pic-index-change
+                :fx/event idx
+                :key :curr-pic-index}}))
+
+(defmethod event-handler ::next-maze-pic [{:keys [fx/context fx/event]}]
+  (let [idx (-> (fx/sub context :curr-pic-index)
+                inc)]
+    {:dispatch {:event/type ::pic-index-change
+                :fx/event idx
+                :key :curr-pic-index}}))
 
 (defmethod event-handler ::stop [{:keys [fx/context fx/event]}]
   (config/save-config!))

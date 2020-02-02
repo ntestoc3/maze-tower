@@ -5,7 +5,8 @@
             [maze-tower.events :as events]
             [maze-tower.util :as util]
             [maze-tower.maze-algo :as maze-algo]
-            [maze-tower.subs :as subs])
+            [maze-tower.subs :as subs]
+            [maze-tower.config :as config])
   (:import javafx.util.StringConverter))
 
 (def range-value-converter
@@ -15,18 +16,21 @@
     (toString [v]
       (util/range->str v))))
 
-(defn text-input [{:keys [fx/context key type value-converter tip opts]
+(defn text-input [{:keys [fx/context key type value-converter filter tip value-change-event opts]
                    :or {type :text-field
                         value-converter :default
+                        value-change-event ::events/value-changed
                         tip nil
                         opts {}}}]
   (merge {:fx/type type
-          :text-formatter {:fx/type :text-formatter
-                           :value-converter value-converter
-                           :value (fx/sub context key)
-                           :on-value-changed {:event/type ::events/value-changed
-                                              :key key
-                                              :fx/sync true}}}
+          :text-formatter (merge {:fx/type :text-formatter
+                                  :value-converter value-converter
+                                  :value (fx/sub context key)
+                                  :on-value-changed {:event/type value-change-event
+                                                     :key key
+                                                     :fx/sync true}}
+                                 (when filter
+                                   {:filter filter}))}
          (when tip
            {:tooltip {:fx/type :tooltip
                       :show-duration [10 :s]
@@ -151,6 +155,7 @@
                           {:fx/type :combo-box
                            :value (fx/sub context :maze-gen-num)
                            :editable true
+                           :converter :long
                            :tooltip {:fx/type :tooltip
                                      :show-duration [10 :s]
                                      :text "生成的迷宫图片数量"}
@@ -178,9 +183,9 @@
                                        :text "迷宫图片总数："}
                                       {:fx/type :label
                                        :max-height ##Inf
-                                       :text (fx/sub context subs/pics-count)}]}]}]})
+                                       :text (str (fx/sub context subs/pics-count))}]}]}]})
 
-(defn function-form [_]
+(defn function-form [{:keys [fx/context]}]
   {:fx/type :v-box
    :children [{:fx/type image-button
                :on-action {:event/type ::events/gen-maze}
@@ -193,19 +198,31 @@
                :image "del.png"
                :on-action {:event/type ::events/del-all-maze-pid}
                :text "清空"}
-              {:fx/type image-button
+              {:fx/type :h-box
                :v-box/margin {:top 50}
-               :opts {:max-width ##Inf}
-               :image "prev.png"
-               :on-action {:event/type ::events/prev-maze-pic}
-               :text "上一个"}
-              {:fx/type image-button
-               :v-box/margin {:top 50}
-               :opts {:max-width ##Inf}
-               :image "next.png"
-               :on-action {:event/type ::events/next-maze-pic}
-               :text "下一个"}
-              ]})
+               :children [{:fx/type image-button
+                           :image "prev.png"
+                           :on-action {:event/type ::events/prev-maze-pic}}
+                          {:fx/type text-input
+                           :max-height ##Inf
+                           :value-change-event ::events/pic-index-change
+                           :opts {:pref-width 40}
+                           :value-converter :long
+                           :filter (fn [change]
+                                     (let [new-txt (.getControlNewText change)]
+                                       (try
+                                         (let [v (Integer/parseInt new-txt)
+                                               total-pics (config/get-config :curr-pic-index)]
+                                           (when (<= 0 v (dec total-pics))
+                                             change))
+                                         (catch Exception e nil))))
+                           :tip "当前显示迷宫图片的索引"
+                           :key :curr-pic-index}
+                          {:fx/type image-button
+                           :image "next.png"
+                           :on-action {:event/type ::events/next-maze-pic
+                                       :fx/sync true}
+                           }]}]})
 
 (defn maze-pic-pane [{:keys [fx/context]}]
   {:fx/type :v-box

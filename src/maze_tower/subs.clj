@@ -7,4 +7,4 @@
   [ctx]
   (-> (fx/sub ctx :maze-pic-infos)
       count
-      str))
+      long))

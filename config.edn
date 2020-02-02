@@ -1,1 +1,1 @@
-{:max-path 300, :min-path 50, :maze-cols [20 90], :maze-rows [10 100], :maze-algo "hunt-and-kill", :maze-gen-num "1", :maze-cell-size [20 80], :maze-path-len [50 100]}
+{:min-path 50, :curr-pic-index 0, :default 0, :maze-algo "hunt-and-kill", :maze-cell-size [20 80], :maze-rows [10 100], :max-path 300, :maze-path-len [50 100], :maze-cols 33, :maze-gen-num 10}
