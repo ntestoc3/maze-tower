@@ -166,11 +166,17 @@
 
 (defmethod event-handler ::change-start-mark [{:keys [fx/context fx/event]}]
   (when-let [new-file (choose-file :open {:title "选择开始标记的图片文件"
+                                          :init-dir (-> (fx/sub context :maze-start-pic)
+                                                        fs/parent
+                                                        str)
                                           :filter image-filter})]
     (change-context context :maze-start-pic (str new-file))))
 
 (defmethod event-handler ::change-end-mark [{:keys [fx/context fx/event]}]
   (when-let [new-file (choose-file :open {:title "选择结束标记的图片文件"
+                                          :init-dir (-> (fx/sub context :maze-end-pic)
+                                                        fs/parent
+                                                        str)
                                           :filter image-filter})]
     (change-context context :maze-end-pic (str new-file))))
 

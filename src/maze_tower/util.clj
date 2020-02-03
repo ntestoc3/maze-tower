@@ -17,12 +17,17 @@
     (>= n max) max
     :else n))
 
-(defn file-istream
-  "获取文件的输入流"
+(defn file-open
+  "读取文件，如果找不到文件则读取资源文件"
   [file-path]
   (some-> (if (fs/file? file-path)
             (fs/file file-path)
-            (io/resource file-path))
+            (io/resource file-path))))
+
+(defn file-istream
+  "获取文件的输入流"
+  [file-path]
+  (some-> (file-open file-path)
           io/input-stream))
 
 (defn range?

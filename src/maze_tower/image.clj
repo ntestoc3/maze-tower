@@ -5,7 +5,8 @@
            java.awt.geom.AffineTransform
            [javax.imageio ImageIO])
   (:require [clojure.java.io :as io]
-            [maze-tower.grid :as grid]))
+            [maze-tower.grid :as grid]
+            [maze-tower.util :as util]))
 
 ;; TODO: update this to work like the cljs version and use a RenderState
 ;; object and not require annotating the cells.
@@ -17,7 +18,7 @@
       (draw-fn g cell cell-size x1 y1 x2 y2))))
 
 (defn open-scaled-img [filename width height]
-  (-> (io/file filename)
+  (-> (util/file-open filename)
       ImageIO/read
       (.getScaledInstance width height Image/SCALE_SMOOTH)))
 

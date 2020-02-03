@@ -28,6 +28,10 @@ FIXME: listing of options this app accepts.
 ### That You Think
 ### Might be Useful
 
+## 图标来源
+https://icons8.cn
+https://www.flaticon.com
+
 ## License
 
 Copyright © 2020 FIXME
@@ -42,3 +46,4 @@ Public License, v. 2.0 are satisfied: GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or (at your
 option) any later version, with the GNU Classpath Exception which is available
 at https://www.gnu.org/software/classpath/license.html.
+
