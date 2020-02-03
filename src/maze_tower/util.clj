@@ -24,6 +24,13 @@
             (fs/file file-path)
             (io/resource file-path))))
 
+(defn file-dir
+  "获取文件的目录,如果是目录则返回目录本身"
+  [file-path]
+  (if (fs/directory? file-path)
+    file-path
+    (str (fs/parent file-path))))
+
 (defn file-istream
   "获取文件的输入流"
   [file-path]

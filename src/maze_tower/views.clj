@@ -64,6 +64,32 @@
           :text text}
          opts))
 
+(defn file-choose-pane
+  "文件选择组件
+  :title为文字标识
+  :image选择文件的图片
+  :key要修改的context key,
+  :type标识选择文件还是文件夹:file或:dir,默认选择文件
+  :filter 文件过滤器，仅针对:type为:file有效"
+  [{:keys [fx/context title image key type filter]
+    :or {type :file}}]
+  {:fx/type :h-box
+   :children [{:fx/type :label
+               :max-height ##Inf
+               :text title}
+              {:fx/type :text-field
+               :max-height ##Inf
+               :h-box/hgrow :always
+               :editable false
+               :text (fx/sub context key)}
+              {:fx/type image-button
+               :image image
+               :on-action {:event/type ::events/file-choose
+                           :title title
+                           :type type
+                           :filter filter
+                           :key key}}]})
+
 (defn log-form [_]
   {:fx/type :titled-pane
    :text "日志记录"
@@ -139,12 +165,20 @@
                           {:fx/type image-button
                            :image  (fx/sub context :maze-start-pic)
                            :content-display :right
-                           :on-action {:event/type ::events/change-start-mark}
+                           :on-action {:event/type ::events/file-choose
+                                       :title "选择迷宫开始标记图片"
+                                       :type :file
+                                       :filter events/image-filter
+                                       :key :maze-start-pic}
                            :text "开始标记"}
                           {:fx/type image-button
                            :image  (fx/sub context :maze-end-pic)
                            :content-display :right
-                           :on-action {:event/type ::events/change-end-mark}
+                           :on-action {:event/type ::events/file-choose
+                                       :title "选择迷宫结束标记图片"
+                                       :type :file
+                                       :filter events/image-filter
+                                       :key :maze-end-pic}
                            :text "结束标记"}]}
               {:fx/type :h-box
                :spacing 10
@@ -165,19 +199,12 @@
                                               :fx/sync true}
                            :items [1 10 30 50 100 150 200 300]
                            :max-height ##Inf}
-                          {:fx/type :label
-                           :max-height ##Inf
-                           :text "迷宫图片保存文件夹:"}
-                          {:fx/type :h-box
+                          {:fx/type file-choose-pane
                            :h-box/hgrow :always
-                           :children [{:fx/type :text-field
-                                       :max-height ##Inf
-                                       :h-box/hgrow :always
-                                       :editable false
-                                       :text (fx/sub context :maze-pics-dir)}
-                                      {:fx/type image-button
-                                       :image  "open_dir.png"
-                                       :on-action {:event/type ::events/change-pic-dir}}]}
+                           :title "迷宫图片保存文件夹:"
+                           :image  "open_dir.png"
+                           :key :maze-pics-dir
+                           :type :dir}
                           {:fx/type :h-box
                            :children [{:fx/type :label
                                        :max-height ##Inf

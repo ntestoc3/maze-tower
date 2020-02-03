@@ -164,23 +164,14 @@
                    ["jpg" ["*.jpeg" "*.jpg"]]
                    ["png" ["*.png"]]])
 
-(defmethod event-handler ::change-start-mark [{:keys [fx/context fx/event]}]
-  (when-let [new-file (choose-file :open {:title "选择开始标记的图片文件"
-                                          :init-dir (-> (fx/sub context :maze-start-pic)
-                                                        fs/parent
-                                                        str)
-                                          :filter image-filter})]
-    (change-context context :maze-start-pic (str new-file))))
+(defmethod event-handler ::file-choose [{:keys [fx/context key type title filter]}]
+  (let [init-dir (-> (fx/sub context key)
+                     util/file-dir)]
+    (when-let [new-path (if (= type :file)
+                          (choose-file :open {:title title
+                                              :init-dir init-dir
+                                              :filter filter})
+                          (choose-dir {:title title
+                                       :init-dir init-dir}))]
+      (change-context context key (str new-path)))))
 
-(defmethod event-handler ::change-end-mark [{:keys [fx/context fx/event]}]
-  (when-let [new-file (choose-file :open {:title "选择结束标记的图片文件"
-                                          :init-dir (-> (fx/sub context :maze-end-pic)
-                                                        fs/parent
-                                                        str)
-                                          :filter image-filter})]
-    (change-context context :maze-end-pic (str new-file))))
-
-(defmethod event-handler ::change-pic-dir [{:keys [fx/context fx/event]}]
-  (when-let [new-dir (choose-dir {:title "选择图片保存文件夹"
-                                  :init-dir (fx/sub context :maze-pics-dir)})]
-    (change-context context :maze-pics-dir (str new-dir))))
