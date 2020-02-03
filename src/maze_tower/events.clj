@@ -115,7 +115,6 @@
 (defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]
   (let [total-pics (fx/sub context subs/pics-count)
         new-idx (util/in-range-int event 0 (dec total-pics))]
-    (prn "new-idx:" new-idx)
     (change-context context key new-idx)))
 
 (defmethod event-handler ::prev-maze-pic [{:keys [fx/context fx/event]}]
@@ -175,3 +174,7 @@
                                        :init-dir init-dir}))]
       (change-context context key (str new-path)))))
 
+(defmethod event-handler ::tower-level-change [{:keys [fx/context fx/event]}]
+  (let [total-pics (fx/sub context subs/pics-count)
+        new-level (util/in-range-int event 0 total-pics)]
+    (change-context context :tower-level new-level)))

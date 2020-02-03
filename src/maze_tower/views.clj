@@ -16,6 +16,18 @@
     (toString [v]
       (util/range->str v))))
 
+(defn non-exception-long-converter
+  "不抛出异常的转换器,可提供默认值，出现异常则使用默认值"
+  ([] (non-exception-long-converter 0))
+  ([default]
+   (proxy [StringConverter] []
+     (fromString [s]
+       (try
+         (Long/parseLong s)
+         (catch Exception e default)))
+     (toString [v]
+       (str v)))))
+
 (defn text-input [{:keys [fx/context key type value-converter filter tip value-change-event opts]
                    :or {type :text-field
                         value-converter :default
@@ -71,7 +83,7 @@
   :key要修改的context key,
   :type标识选择文件还是文件夹:file或:dir,默认选择文件
   :filter 文件过滤器，仅针对:type为:file有效"
-  [{:keys [fx/context title image key type filter]
+  [{:keys [fx/context title image key type filter tooltip]
     :or {type :file}}]
   {:fx/type :h-box
    :children [{:fx/type :label
@@ -79,6 +91,9 @@
                :text title}
               {:fx/type :text-field
                :max-height ##Inf
+               :tooltip {:fx/type :tooltip
+                         :show-duration [10 :s]
+                         :text tooltip}
                :h-box/hgrow :always
                :editable false
                :text (fx/sub context key)}
@@ -99,119 +114,121 @@
              }})
 
 (defn maze-config-form [{:keys [fx/context]}]
-  {:fx/type :v-box
-   :children [{:fx/type :h-box
-               :spacing 10
-               :fill-height true
-               :padding {:top 5}
-               :children [{:fx/type :label
-                           :max-height ##Inf
-                           :text "生成算法："}
-                          {:fx/type :choice-box
-                           :value (fx/sub context :maze-algo)
-                           :on-value-changed {:event/type ::events/value-changed
-                                              :key :maze-algo
-                                              :fx/sync true}
-                           :items (keys maze-algo/algorithm-functions)
-                           :max-height ##Inf}
-                          {:fx/type :label
-                           :max-height ##Inf
-                           :text "行数："}
-                          {:fx/type text-input
-                           :max-height ##Inf
-                           :value-converter range-value-converter
-                           :tip "生成迷宫的行数:
+  (let [maze-gen-num (fx/sub context :maze-gen-num)]
+    {:fx/type :v-box
+     :children [{:fx/type :h-box
+                 :spacing 10
+                 :fill-height true
+                 :padding {:top 5}
+                 :children [{:fx/type :label
+                             :max-height ##Inf
+                             :text "生成算法："}
+                            {:fx/type :choice-box
+                             :value (fx/sub context :maze-algo)
+                             :on-value-changed {:event/type ::events/value-changed
+                                                :key :maze-algo
+                                                :fx/sync true}
+                             :items (keys maze-algo/algorithm-functions)
+                             :max-height ##Inf}
+                            {:fx/type :label
+                             :max-height ##Inf
+                             :text "行数："}
+                            {:fx/type text-input
+                             :max-height ##Inf
+                             :value-converter range-value-converter
+                             :tip "生成迷宫的行数:
 可以使用固定数字，比如5  生成固定行数
 或者范围，比如1-10 生成1-10之间的随机行数(包含1和10)
 或者逗号隔开的多个数字，比如1,2,5,3  生成行数为从中随机挑选一个数字"
-                           :key :maze-rows}
-                          {:fx/type :label
-                           :max-height ##Inf
-                           :text "列数："}
-                          {:fx/type text-input
-                           :max-height ##Inf
-                           :value-converter range-value-converter
-                           :tip "生成迷宫的列数:
+                             :key :maze-rows}
+                            {:fx/type :label
+                             :max-height ##Inf
+                             :text "列数："}
+                            {:fx/type text-input
+                             :max-height ##Inf
+                             :value-converter range-value-converter
+                             :tip "生成迷宫的列数:
 可以使用固定数字，比如5  生成固定列数
 或者范围，比如1-10 生成1-10之间的随机列数(包含1和10)
 或者逗号隔开的多个数字，比如1,2,5,3  生成列数为从中随机挑选一个数字"
-                           :key :maze-cols}
-                          {:fx/type :label
-                           :max-height ##Inf
-                           :text "路径长度："}
-                          {:fx/type text-input
-                           :max-height ##Inf
-                           :value-converter range-value-converter
-                           :tip "生成迷宫的寻路路径长度:
+                             :key :maze-cols}
+                            {:fx/type :label
+                             :max-height ##Inf
+                             :text "路径长度："}
+                            {:fx/type text-input
+                             :max-height ##Inf
+                             :value-converter range-value-converter
+                             :tip "生成迷宫的寻路路径长度:
 可以使用固定数字，比如5  生成固定路径长度
 或者范围，比如20-100 生成20-100之间的随机路径长度(包含20和100)
 或者逗号隔开的多个数字，比如20,30,50,100 生成的路径长度为从中随机挑选一个数字"
-                           :key :maze-path-len}]}
-              {:fx/type :h-box
-               :spacing 10
-               :fill-height true
-               :padding {:top 5}
-               :children [{:fx/type :label
-                           :max-height ##Inf
-                           :text "单元格大小："}
-                          {:fx/type text-input
-                           :max-height ##Inf
-                           :value-converter range-value-converter
-                           :tip "生成迷宫图片的单元格大小(单位为像素)：
+                             :key :maze-path-len}]}
+                {:fx/type :h-box
+                 :spacing 10
+                 :fill-height true
+                 :padding {:top 5}
+                 :children [{:fx/type :label
+                             :max-height ##Inf
+                             :text "单元格大小："}
+                            {:fx/type text-input
+                             :max-height ##Inf
+                             :value-converter range-value-converter
+                             :tip "生成迷宫图片的单元格大小(单位为像素)：
 可以使用固定数字，比如20  生成20px * 20px的单元格大小
 或者范围，比如20-100 生成20-100之间的随机单元格大小(包含20和100)
 或者逗号隔开的多个数字，比如20,30,50,100 生成的单元格大小为从中随机挑选一个数字"
-                           :key :maze-cell-size}
-                          {:fx/type image-button
-                           :image  (fx/sub context :maze-start-pic)
-                           :content-display :right
-                           :on-action {:event/type ::events/file-choose
-                                       :title "选择迷宫开始标记图片"
-                                       :type :file
-                                       :filter events/image-filter
-                                       :key :maze-start-pic}
-                           :text "开始标记"}
-                          {:fx/type image-button
-                           :image  (fx/sub context :maze-end-pic)
-                           :content-display :right
-                           :on-action {:event/type ::events/file-choose
-                                       :title "选择迷宫结束标记图片"
-                                       :type :file
-                                       :filter events/image-filter
-                                       :key :maze-end-pic}
-                           :text "结束标记"}]}
-              {:fx/type :h-box
-               :spacing 10
-               :fill-height true
-               :padding {:top 5}
-               :children [{:fx/type :label
-                           :max-height ##Inf
-                           :text "生成数量："}
-                          {:fx/type :combo-box
-                           :value (fx/sub context :maze-gen-num)
-                           :editable true
-                           :converter :long
-                           :tooltip {:fx/type :tooltip
-                                     :show-duration [10 :s]
-                                     :text "生成的迷宫图片数量"}
-                           :on-value-changed {:event/type ::events/value-changed
-                                              :key :maze-gen-num
-                                              :fx/sync true}
-                           :items [1 10 30 50 100 150 200 300]
-                           :max-height ##Inf}
-                          {:fx/type file-choose-pane
-                           :h-box/hgrow :always
-                           :title "迷宫图片保存文件夹:"
-                           :image  "open_dir.png"
-                           :key :maze-pics-dir
-                           :type :dir}
-                          {:fx/type :h-box
-                           :children [{:fx/type :label
-                                       :max-height ##Inf
-                                       :text "迷宫图片总数："}
-                                      {:fx/type :label
-                                       :max-height ##Inf
-                                       :text (str (fx/sub context subs/pics-count))}]}]}]})
+                             :key :maze-cell-size}
+                            {:fx/type image-button
+                             :image  (fx/sub context :maze-start-pic)
+                             :content-display :right
+                             :on-action {:event/type ::events/file-choose
+                                         :title "选择迷宫的开始标记图片"
+                                         :type :file
+                                         :filter events/image-filter
+                                         :key :maze-start-pic}
+                             :text "开始标记"}
+                            {:fx/type image-button
+                             :image  (fx/sub context :maze-end-pic)
+                             :content-display :right
+                             :on-action {:event/type ::events/file-choose
+                                         :title "选择迷宫的结束标记图片"
+                                         :type :file
+                                         :filter events/image-filter
+                                         :key :maze-end-pic}
+                             :text "结束标记"}
+                            {:fx/type :label
+                             :max-height ##Inf
+                             :text "生成数量："}
+                            {:fx/type :combo-box
+                             :value maze-gen-num
+                             :editable true
+                             :converter (non-exception-long-converter 0)
+                             :tooltip {:fx/type :tooltip
+                                       :show-duration [10 :s]
+                                       :text "生成的迷宫图片数量"}
+                             :on-value-changed {:event/type ::events/value-changed
+                                                :key :maze-gen-num
+                                                :fx/sync true}
+                             :items [1 10 30 50 100 150 200 300]
+                             :max-height ##Inf}
+                            ]}
+                {:fx/type :h-box
+                 :spacing 10
+                 :fill-height true
+                 :padding {:top 5}
+                 :children [{:fx/type file-choose-pane
+                             :h-box/hgrow :always
+                             :title "迷宫图片保存文件夹:"
+                             :image  "open_dir.png"
+                             :key :maze-pics-dir
+                             :type :dir}
+                            {:fx/type :h-box
+                             :children [{:fx/type :label
+                                         :max-height ##Inf
+                                         :text "迷宫图片总数："}
+                                        {:fx/type :label
+                                         :max-height ##Inf
+                                         :text (str (fx/sub context subs/pics-count))}]}]}]}))
 
 (defn function-form [{:keys [fx/context]}]
   {:fx/type :v-box
@@ -269,6 +286,41 @@
                              :editable false
                              :text (fx/sub context subs/curr-maze-route)}]}]}))
 
+(defn tower-gen-pane [{:keys [fx/context]}]
+  (let [tower-level (fx/sub context :tower-level)
+        total-maze (fx/sub context subs/pics-count)]
+    {:fx/type :h-box
+     :spacing 10
+     :children [{:fx/type :label
+                 :max-height ##Inf
+                 :text "迷宫塔层数："}
+                {:fx/type :combo-box
+                 :value tower-level
+                 :editable true
+
+                 ;; 如果使用跟上次同样的值，则等于没改变，不会刷新界面
+                 :converter (non-exception-long-converter 0)
+                 :tooltip {:fx/type :tooltip
+                           :show-duration [10 :s]
+                           :text "生成的迷宫塔的层数
+注意!必须先生成足够数量的迷宫图片"}
+                 :on-value-changed {:event/type ::events/tower-level-change}
+                 :items (take-while #(<= % total-maze)
+                                    [5 10 30 50 100 150])
+                 :max-height ##Inf}
+                {:fx/type file-choose-pane
+                 :h-box/hgrow :always
+                 :title "迷宫塔最顶层文件："
+                 :image  "file.png"
+                 :tooltip "即包含的flag文件"
+                 :key :tower-top-file
+                 :type :file}
+                {:fx/type image-button
+                 :h-box/margin {:left 50}
+                 :text "生成迷宫塔"
+                 :image "taowa.png"
+                 :on-action {:event/type ::events/gen-tower}}]}))
+
 (defn root [_]
   {:fx/type :stage
    :on-close-request {:event/type ::events/stop}
@@ -289,6 +341,6 @@
                   :center {:fx/type maze-pic-pane
                            :border-pane/margin 10
                            }
-                  ;; :bottom {:fx/type log-form
-                  ;;          :border-pane/margin 10}
+                  :bottom {:fx/type tower-gen-pane
+                           :border-pane/margin 10}
                   }}})

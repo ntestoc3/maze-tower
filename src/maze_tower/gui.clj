@@ -26,9 +26,10 @@
           :maze-start-pic (config/get-config :maze-start-pic "start.png")
           :maze-end-pic (config/get-config :maze-end-pic "end.png")
           :maze-gen-num (config/get-config :maze-gen-num 10)
-          :tower-level (config/get-config :tower-level 30)
           :maze-pic-infos (config/get-config :maze-pic-infos [])
           :curr-pic-index (config/get-config :curr-pic-index 0)
+          :tower-level (config/get-config :tower-level 30)
+          :tower-top-file (config/get-config :tower-top-file ".")
           :showing true}
          cache/lru-cache-factory)))
 
