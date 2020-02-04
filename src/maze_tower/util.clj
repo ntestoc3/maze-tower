@@ -2,10 +2,12 @@
   (:require [clojure.java.io :as io]
             [me.raynes.fs :as fs]
             [clojure.java.shell :refer [sh]]
+            [java-time :as time]
             [clojure.string :as str])
   (:import net.lingala.zip4j.ZipFile
            net.lingala.zip4j.model.ZipParameters
            net.lingala.zip4j.model.enums.EncryptionMethod
+           [net.lingala.zip4j.progress ProgressMonitor$State ProgressMonitor$Result]
            java.awt.Desktop
            ))
 
@@ -117,34 +119,91 @@
       (-> (Desktop/getDesktop)
           (.open (io/file path))))))
 
-(defn zip-file
+;;;;; wait until
+(def default-wait-death (time/seconds 5))
+(def default-wait-delay-ms 10)
+(defn wait-until*
+  "wait until a function has become true"
+  ([name fn] (wait-until* name fn default-wait-death))
+  ([name fn wait-death]
+   (let [die (time/plus (time/local-time) wait-death)]
+     (loop []
+       (if-let [result (fn)]
+         result
+         (do
+           (Thread/sleep default-wait-delay-ms)
+           (if (time/after? (time/local-time) die)
+             (throw (Exception. (str "timed out waiting for: " name)))
+             (recur))))))))
+
+(defmacro wait-until
+  [expr]
+  `(wait-until* ~(pr-str expr) (fn [] ~expr)))
+
+(defn zip-file!
   "创建压缩文件
   `out-fname` output zip file name.
   `files` files add to zip file.
   `password` optional, zip password."
-  ([out-fname files] (zip-file out-fname files nil))
+  ([out-fname files] (zip-file! out-fname files nil))
   ([out-fname files password]
    (let [params (doto (ZipParameters.)
                   (.setEncryptFiles (if password
                                       true
                                       false))
-                  (.setEncryptionMethod EncryptionMethod/AES))
+                  ;; 使用AES加密的话，长密码会出错误?
+                  (.setEncryptionMethod EncryptionMethod/ZIP_STANDARD))
          files (map io/file files)]
      (-> (ZipFile. out-fname (char-array password))
          (.addFiles files params)))))
 
-(defn join-files
+(defn unzip-file!
+  "解压缩文件
+  `zip-file` 要解压的zip文件
+  `out-dir` 解压缩的目标文件夹
+  "
+  ([zip-file out-dir] (unzip-file! zip-file out-dir nil))
+  ([zip-file out-dir password]
+   (let [zip (if password
+               (ZipFile. zip-file (char-array password))
+               (ZipFile. zip-file))]
+     (.extractAll zip out-dir))))
+
+(defn unzip-cmd!
+  "使用unzip命令解压文件"
+  ([zip-file out-dir] (unzip-cmd! zip-file out-dir nil))
+  ([zip-file out-dir password]
+   (let [cmd (concat ["unzip" "-o" ]
+                     (when password
+                       ["-P" password])
+                     [zip-file "-d" out-dir])]
+     (fs/mkdirs out-dir)
+     (-> (apply sh cmd)
+         :out
+         print))))
+
+(defn join-files!
   "连接多个文件到out-file"
   [out-file & files]
-  (with-open [w (io/writer out-file)]
+  (with-open [w (io/output-stream out-file)]
     (doseq [f files]
-      (io/copy (io/file f) w))))
+      (io/copy (io/input-stream f) w))))
+
+(defn file-content-equal?
+  "两个文件内容是否相同"
+  [file1 file2]
+  (= (slurp file1) (slurp file2)))
 
 (comment
-  (zip-file "test.zip" ["maze.txt"] "123456")
-  (zip-file "test.zip" ["maze.txt"])
+  (zip-file! "test.zip" ["maze.txt"] "123456")
 
-  (join-files "test.aaa.txt" "maze.txt" "project.clj" "maze.txt")
+  (zip-file! "test.zip" ["maze.txt"])
+
+  (unzip-file! "test.zip"  "./maze_unzip")
+
+  (unzip-cmd! "test.zip"  "./maze_unzip")
+
+  (join-files! "test.aaa.txt" "maze.txt" "project.clj" "maze.txt")
 
 
   (range->str 8)

@@ -4,7 +4,8 @@
             [maze-tower.image :as image]
             [me.raynes.fs :as fs]
             [clojure.java.io :as io]
-            [maze-tower.util :as util])
+            [maze-tower.util :as util]
+            [clojure.string :as str])
   (:import [javax.imageio ImageIO]))
 
 (defn run-and-render [algorithm grid-size render-fn]
@@ -27,7 +28,8 @@
     [0 -1] :left
     :unknown))
 
-(def route-value {:up 1 :down 2 :left 3 :right 4})
+(def default-direction-chars [\↑ \↓ \← \→])
+(def route-value (zipmap [:up :down :left :right] default-direction-chars))
 
 (defn get-route
   "获取迷宫的路径"
@@ -98,17 +100,73 @@
        (range output-start-index
               (+ output-start-index count))))
 
+(defn gen-tower
+  "生成迷宫塔,返回解压密码序列
+  :output-file 指定输出文件名
+  :first-file 最顶层的文件
+  :maze-infos 使用的迷宫信息
+  :level 层数
+  :direction-chars 四个方向对应的字符[上 下 左 右],如果为空，则使用默认方向字符
+  :sort 是否按文件大小排序"
+  [{:keys [output-file first-file maze-infos level direction-chars sort]}]
+  (let [mazes (->> (shuffle maze-infos)
+                   (take level))
+        mazes (if sort
+                (-> (sort-by (comp fs/size :image-path) mazes)
+                    reverse)
+                mazes)
+        ;; tmp-zip (str output-file ".zip")
+        pass-trans (zipmap default-direction-chars direction-chars)
+        trans-pass (fn [route]
+                     (if pass-trans
+                       (str/escape route pass-trans)
+                       route))]
+    (reduce (fn [prev-file {:keys [route image-path]}]
+              (let [password (trans-pass route)
+                    tmp-zip (str "maze_" output-file ".zip")]
+                (prn "zip:" prev-file "pass:" password)
+                (util/zip-file! tmp-zip [prev-file] password)
+                (util/join-files! output-file image-path tmp-zip)
+                (fs/delete tmp-zip)
+                (Thread/sleep 200.)
+                output-file))
+            first-file
+            mazes)
+    (->> (reverse mazes)
+         (map (comp trans-pass :route)))))
+
+(defn test-tower
+  "测试解压是否正确"
+  [tower-file pwds result-file]
+  (let [unzip-path (str tower-file "_unzip")]
+    (reduce (fn [zip-path password]
+              (util/unzip-cmd! zip-path unzip-path password)
+              (str (fs/file unzip-path tower-file)))
+            tower-file
+            pwds)
+    (-> (fs/file unzip-path result-file)
+        str
+        (util/file-content-equal? result-file))))
+
 (comment
 
-  (gen-mazes {:count 5
-              :output-dir "maze_images"
-              :output-start-index 10
-              :cell-size [10 30]
-              :algo (first (keys maze-algo/algorithm-functions))
-              :rows [20 100]
-              :cols 30
-              :start-mark "./resources/start.png"
-              :end-mark "./resources/end.png"})
+  (def ms (gen-mazes {:count 15
+                      :output-dir "maze_images"
+                      :output-start-index 10
+                      :cell-size [10 30]
+                      :algo (first (keys maze-algo/algorithm-functions))
+                      :rows [20 100]
+                      :cols 30
+                      :start-mark "./resources/start.png"
+                      :end-mark "./resources/end.png"}))
 
+  (def ts (gen-tower {:output-file "flag.jpg"
+                      :first-file "project.clj"
+                      :maze-infos ms
+                      :level 6
+                      :direction-chars "1234"
+                      :sort true}))
+
+  (test-tower "flag.jpg" ts "project.clj")
 
   )
