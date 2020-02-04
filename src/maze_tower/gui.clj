@@ -5,7 +5,9 @@
             [clojure.core.cache :as cache]
             [maze-tower.views :as views]
             [maze-tower.config :as config]
-            [maze-tower.events :as events]))
+            [maze-tower.events :as events]
+            [maze-tower.util :as util]
+            [taoensso.timbre :as log]))
 
 ;; 可设置项  迷宫生成算法，  迷宫行列范围  迷宫最小-最大路径  迷宫格最小-最大尺寸
 ;; 迷宫图片保存目录
@@ -35,6 +37,8 @@
           :maze-down-char (config/get-config :maze-down-char "2")
           :maze-left-char (config/get-config :maze-left-char "3")
           :maze-right-char (config/get-config :maze-right-char "4")
+          :logs ""
+          :log-auto-scroll true #_(config/get-config :log-auto-scroll true)
           :showing true}
          cache/lru-cache-factory)))
 
@@ -62,10 +66,15 @@
 
 (defn show
   []
-  (fx/mount-renderer *state renderer))
+  (fx/mount-renderer *state renderer)
+  (util/log-to-fn! :win-log #(event-handler {:event/type ::events/append-value
+                                             :fx/event %
+                                             :key :logs})))
 
 (comment
   (show)
+
+  (log/info "test")
 
   (event-handler {:event/type ::events/value-changed
                   :key :maze-left-char

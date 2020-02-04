@@ -112,6 +112,14 @@
 (defmethod event-handler ::value-changed [{:keys [fx/context fx/event key]}]
   (change-context context key event))
 
+(defmethod event-handler ::append-value [{:keys [fx/context fx/event key]}]
+  (let [old-v (fx/sub context key)]
+    {:context (fx/swap-context context assoc key (str old-v event))}))
+
+(defmethod event-handler ::auto-scroll [{:keys [fx/context fx/event key]}]
+  (let [old-sel (fx/sub context key)]
+    (change-context context key (not old-sel))))
+
 (defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]
   (let [total-pics (fx/sub context subs/pics-count)
         new-idx (util/in-range-int event 0 (dec total-pics))]

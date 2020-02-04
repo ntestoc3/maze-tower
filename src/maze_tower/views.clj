@@ -1,5 +1,6 @@
 (ns maze-tower.views
   (:require [cljfx.api :as fx]
+            [cljfx.composite :as composite]
             [cljfx.ext.table-view :as ext-table-view]
             [clojure.java.io :as io]
             [maze-tower.events :as events]
@@ -114,13 +115,31 @@
                            :filter filter
                            :key key}}]})
 
-(defn log-form [_]
-  {:fx/type :titled-pane
-   :text "日志记录"
-   :collapsible false
-   :content {:fx/type :text-area
-             :editable false
-             }})
+(defn log-context-menu [{:keys [context text-inst selected-check]}]
+  {:fx/type :context-menu
+   :items [{:fx/type :menu-item
+            :text "全选"
+            :on-action (fn [_] (.selectAll text-inst))}
+           {:fx/type :check-menu-item
+            :text "自动滚动"
+            :selected selected-check
+            :on-action {:event/type ::events/auto-scroll
+                        :key :log-auto-scroll}}]})
+
+(defn log-form [{:keys [fx/context]}]
+  (let [auto-scroll (fx/sub context :log-auto-scroll)]
+    {:fx/type :titled-pane
+     :text "日志记录"
+     ;;:collapsible false
+     :content {:fx/type fx/ext-on-instance-lifecycle
+               :on-created {:fx/type }#(->> (log-context-menu context % auto-scroll)
+                                 (.setContextMenu %))
+               :desc {:fx/type :text-area
+                      :editable false
+                      :text (fx/sub context :logs)
+                      :scroll-top (if auto-scroll
+                                    ##Inf
+                                    0)}}}))
 
 (defn maze-config-form [{:keys [fx/context]}]
   (let [maze-gen-num (fx/sub context :maze-gen-num)]
@@ -399,6 +418,7 @@
                   :center {:fx/type maze-pic-pane
                            :border-pane/margin 10
                            }
-                  :bottom {:fx/type tower-gen-pane
-                           :border-pane/margin 10}
-                  }}})
+                  :bottom {:fx/type :v-box
+                           :border-pane/margin 10
+                           :children [{:fx/type tower-gen-pane}
+                                      {:fx/type log-form}]}}}})

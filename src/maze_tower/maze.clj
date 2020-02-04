@@ -5,7 +5,8 @@
             [me.raynes.fs :as fs]
             [clojure.java.io :as io]
             [maze-tower.util :as util]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [taoensso.timbre :as log])
   (:import [javax.imageio ImageIO]))
 
 (defn run-and-render [algorithm grid-size render-fn]
@@ -99,6 +100,8 @@
                                      {:out-path out-path}))))
        (range output-start-index
               (+ output-start-index count))))
+
+(log/info "testo")
 
 (defn gen-tower
   "生成迷宫塔,返回解压密码序列
