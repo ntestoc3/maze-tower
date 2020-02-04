@@ -29,7 +29,12 @@
           :maze-pic-infos (config/get-config :maze-pic-infos [])
           :curr-pic-index (config/get-config :curr-pic-index 0)
           :tower-level (config/get-config :tower-level 30)
+          :tower-sort-pic (config/get-config :tower-sort-pic false)
           :tower-top-file (config/get-config :tower-top-file ".")
+          :maze-up-char (config/get-config :maze-up-char "1")
+          :maze-down-char (config/get-config :maze-down-char "2")
+          :maze-left-char (config/get-config :maze-left-char "3")
+          :maze-right-char (config/get-config :maze-right-char "4")
           :showing true}
          cache/lru-cache-factory)))
 
@@ -62,5 +67,10 @@
 (comment
   (show)
 
+  (event-handler {:event/type ::events/value-changed
+                  :key :maze-left-char
+                  :fx/event  "aac"})
+
+  (renderer)
 
   )

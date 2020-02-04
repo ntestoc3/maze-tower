@@ -178,3 +178,24 @@
   (let [total-pics (fx/sub context subs/pics-count)
         new-level (util/in-range-int event 0 total-pics)]
     (change-context context :tower-level new-level)))
+
+(defmethod event-handler ::gen-tower [{:keys [fx/context fx/event]}]
+  (when-let [out-file (choose-file :save
+                                   {:title "选择要保存的迷宫塔文件"
+                                    :init-dir (let [dir (config/get-config :last-save-dir "./")]
+                                                (if (fs/directory? dir)
+                                                  dir
+                                                  "./"))})]
+    (-> (maze/gen-tower {:output-file (str out-file)
+                         :first-file (fx/sub context :tower-top-file)
+                         :maze-infos (fx/sub context :maze-pic-infos)
+                         :level (fx/sub context :tower-level)
+                         :sort (fx/sub context :tower-sort-pic)
+                         :direction-chars [(fx/sub context :maze-up-char)
+                                           (fx/sub context :maze-down-char)
+                                           (fx/sub context :maze-left-char)
+                                           (fx/sub context :maze-right-char)]})
+        (doto prn)
+        (maze/test-tower (str out-file) (fx/sub context :tower-top-file)))
+    (config/add-config! :last-save-dir (.getParent out-file))
+    {}))

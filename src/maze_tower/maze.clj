@@ -123,7 +123,7 @@
                        route))]
     (reduce (fn [prev-file {:keys [route image-path]}]
               (let [password (trans-pass route)
-                    tmp-zip (str "maze_" output-file ".zip")]
+                    tmp-zip (str output-file "_tower.zip")]
                 (prn "zip:" prev-file "pass:" password)
                 (util/zip-file! tmp-zip [prev-file] password)
                 (util/join-files! output-file image-path tmp-zip)
@@ -137,16 +137,17 @@
 
 (defn test-tower
   "测试解压是否正确"
-  [tower-file pwds result-file]
+  [pwds tower-file result-file]
   (let [unzip-path (str tower-file "_unzip")]
     (reduce (fn [zip-path password]
               (util/unzip-cmd! zip-path unzip-path password)
-              (str (fs/file unzip-path tower-file)))
+              (str (fs/file unzip-path (fs/base-name tower-file))))
             tower-file
             pwds)
-    (-> (fs/file unzip-path result-file)
-        str
-        (util/file-content-equal? result-file))))
+    (assert (-> (fs/file unzip-path (fs/base-name result-file))
+                str
+                (util/file-content-equal? result-file)))
+    (fs/delete-dir unzip-path)))
 
 (comment
 
@@ -167,6 +168,6 @@
                       :direction-chars "1234"
                       :sort true}))
 
-  (test-tower "flag.jpg" ts "project.clj")
+  (test-tower ts "flag.jpg" "project.clj")
 
   )

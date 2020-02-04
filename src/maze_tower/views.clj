@@ -28,12 +28,13 @@
      (toString [v]
        (str v)))))
 
-(defn text-input [{:keys [fx/context key type value-converter filter tip value-change-event opts]
-                   :or {type :text-field
-                        value-converter :default
-                        value-change-event ::events/value-changed
-                        tip nil
-                        opts {}}}]
+(defn text-input
+  [{:keys [fx/context key type value-converter filter tip value-change-event opts]
+    :or {type :text-field
+         value-converter :default
+         value-change-event ::events/value-changed
+         tip nil
+         opts {}}}]
   (merge {:fx/type type
           :text-formatter (merge {:fx/type :text-formatter
                                   :value-converter value-converter
@@ -48,6 +49,14 @@
                       :show-duration [10 :s]
                       :text tip}})
          opts))
+
+(defn labeled-text-input
+  [opts]
+  {:fx/type :h-box
+   :children [{:fx/type :label
+               :max-height ##Inf
+               :text (get opts :label)}
+              (text-input opts)]})
 
 (defmacro image-view
   "从资源或文件中加载图片，如果找不到文件显示空白
@@ -235,14 +244,16 @@
    :children [{:fx/type image-button
                :on-action {:event/type ::events/gen-maze}
                :image "gen.png"
-               :opts {:max-width ##Inf}
-               :text "生成"}
+               :opts {:max-width ##Inf
+                      :mnemonic-parsing true}
+               :text "生成 (_G)"}
               {:fx/type image-button
                :v-box/margin {:top 50}
-               :opts {:max-width ##Inf}
+               :opts {:max-width ##Inf
+                      :mnemonic-parsing true}
                :image "del.png"
                :on-action {:event/type ::events/del-all-maze-pic}
-               :text "清空"}
+               :text "清空 (_C)"}
               {:fx/type :h-box
                :v-box/margin {:top 50}
                :children [{:fx/type image-button
@@ -286,40 +297,87 @@
                              :editable false
                              :text (fx/sub context subs/curr-maze-route)}]}]}))
 
+(def min-text-width 40)
+
 (defn tower-gen-pane [{:keys [fx/context]}]
   (let [tower-level (fx/sub context :tower-level)
         total-maze (fx/sub context subs/pics-count)]
-    {:fx/type :h-box
-     :spacing 10
-     :children [{:fx/type :label
-                 :max-height ##Inf
-                 :text "迷宫塔层数："}
-                {:fx/type :combo-box
-                 :value tower-level
-                 :editable true
+    {:fx/type :v-box
+     :children [{:fx/type :h-box
+                 :spacing 10
+                 :children [{:fx/type :label
+                             :max-height ##Inf
+                             :text "迷宫塔层数："}
+                            {:fx/type :combo-box
+                             :value tower-level
+                             :editable true
 
-                 ;; 如果使用跟上次同样的值，则等于没改变，不会刷新界面
-                 :converter (non-exception-long-converter 0)
-                 :tooltip {:fx/type :tooltip
-                           :show-duration [10 :s]
-                           :text "生成的迷宫塔的层数
+                             ;; 如果使用跟上次同样的值，则等于没改变，不会刷新界面
+                             :converter (non-exception-long-converter 0)
+                             :tooltip {:fx/type :tooltip
+                                       :show-duration [10 :s]
+                                       :text "生成的迷宫塔的层数
 注意!必须先生成足够数量的迷宫图片"}
-                 :on-value-changed {:event/type ::events/tower-level-change}
-                 :items (take-while #(<= % total-maze)
-                                    [5 10 30 50 100 150])
-                 :max-height ##Inf}
-                {:fx/type file-choose-pane
-                 :h-box/hgrow :always
-                 :title "迷宫塔最顶层文件："
-                 :image  "file.png"
-                 :tooltip "即包含的flag文件"
-                 :key :tower-top-file
-                 :type :file}
-                {:fx/type image-button
-                 :h-box/margin {:left 50}
-                 :text "生成迷宫塔"
-                 :image "taowa.png"
-                 :on-action {:event/type ::events/gen-tower}}]}))
+                             :on-value-changed {:event/type ::events/tower-level-change}
+                             :items (take-while #(<= % total-maze)
+                                                [5 10 30 50 100 150])
+                             :max-height ##Inf}
+                            {:fx/type file-choose-pane
+                             :h-box/hgrow :always
+                             :title "迷宫塔最顶层文件："
+                             :image  "file.png"
+                             :tooltip "即包含的flag文件"
+                             :key :tower-top-file
+                             :type :file}
+                            {:fx/type image-button
+                             :h-box/margin {:left 50}
+                             :opts {:mnemonic-parsing true}
+                             :text "生成迷宫塔 (_T)"
+                             :image "taowa.png"
+                             :on-action {:event/type ::events/gen-tower}}]}
+                {:fx/type :h-box
+                 :spacing 10
+                 :children [{:fx/type :check-box
+                             :max-height ##Inf
+                             :selected (fx/sub context :tower-sort-pic)
+                             :tooltip {:fx/type :tooltip
+                                       :show-duration [10 :s]
+                                       :text "生成的迷宫塔按图片文件大小排列
+最小的文件排在最底层(即最先看到)"}
+                             :text "按图片大小排序"
+                             :on-selected-changed {:event/type ::events/value-changed
+                                                   :key :tower-sort-pic
+                                                   }}
+                            {:fx/type :label
+                             :max-height ##Inf
+                             :text "四个方向的密码字符:"}
+                            {:fx/type :h-box
+                             :spacing 5
+                             :children [{:fx/type labeled-text-input
+                                         :label "上"
+                                         :max-height ##Inf
+                                         :opts {:pref-width min-text-width}
+                                         :tip "解密时往上走对应的字符"
+                                         :key :maze-up-char}
+                                        {:fx/type labeled-text-input
+                                         :label "下"
+                                         :max-height ##Inf
+                                         :opts {:pref-width min-text-width}
+                                         :tip "解密时往下走对应的字符"
+                                         :key :maze-down-char}
+                                        {:fx/type labeled-text-input
+                                         :label "左"
+                                         :max-height ##Inf
+                                         :opts {:pref-width min-text-width}
+                                         :tip "解密时往左走对应的字符"
+                                         :key :maze-left-char}
+                                        {:fx/type labeled-text-input
+                                         :label "右"
+                                         :max-height ##Inf
+                                         :opts {:pref-width min-text-width}
+                                         :tip "解密时往右走对应的字符"
+                                         :key :maze-right-char}
+                                        ]}]}]}))
 
 (defn root [_]
   {:fx/type :stage
