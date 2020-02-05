@@ -116,27 +116,6 @@
                            :filter filter
                            :key key}}]})
 
-(defn log-form [{:keys [fx/context]}]
-  {:fx/type :titled-pane
-   :text "日志记录"
-   ;;:collapsible false
-   :content
-   {:fx/type with-scroll-prop
-    :props {:on-scroll-top-changed {:event/type ::events/value-changed
-                                    :key :log-scroll-top
-                                    :fx/sync true}}
-    :desc {:fx/type :text-area
-           :editable false
-           :text (fx/sub context :logs)
-           :scroll-top (fx/sub context :log-scroll-top)
-           :context-menu {:fx/type :context-menu
-                          :items [{:fx/type :check-menu-item
-                                   :text "自动滚动"
-                                   :selected (fx/sub context :log-auto-scroll)
-                                   :on-action {:event/type ::events/auto-scroll
-                                               :fs/sync true
-                                               :key :log-auto-scroll}}]}
-           }}})
 
 (defn maze-config-form [{:keys [fx/context]}]
   (let [maze-gen-num (fx/sub context :maze-gen-num)]
@@ -255,6 +234,32 @@
                                          :max-height ##Inf
                                          :text (str (fx/sub context subs/pics-count))}]}]}]}))
 
+(defn log-form [{:keys [fx/context]}]
+  (let [log-scroll-top (fx/sub context :log-scroll-top)]
+    {:fx/type :titled-pane
+     :text "日志记录"
+     ;;:collapsible false
+     :content
+     {:fx/type with-scroll-prop
+      :props {:on-scroll-top-changed {:event/type ::events/value-changed
+                                      :key :log-scroll-top
+                                      :fx/sync true}}
+      :desc {:fx/type :text-area
+             :editable false
+             :text (do
+                     (prn "log new text...")
+                     (fx/sub context :logs))
+             :scroll-top (do
+                           (prn "scroll-top...." log-scroll-top)
+                           log-scroll-top)
+             :context-menu {:fx/type :context-menu
+                            :items [{:fx/type :check-menu-item
+                                     :text "自动滚动"
+                                     :selected (fx/sub context :log-auto-scroll)
+                                     :on-action {:event/type ::events/auto-scroll
+                                                 :fs/sync true
+                                                 :key :log-auto-scroll}}]}
+             }}}))
 (defn function-form [{:keys [fx/context]}]
   {:fx/type :v-box
    :children [{:fx/type image-button

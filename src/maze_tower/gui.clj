@@ -40,7 +40,7 @@
           :logs ""
           ;; bool值最好默认为false,因为get-config如果是false会返回nil,取默认值刚好
           :log-auto-scroll (config/get-config :log-auto-scroll true)
-          :log-scroll-top (config/get-config :log-scroll-top 0)
+          :log-scroll-top 1000 #_(config/get-config :log-scroll-top 0)
           :showing true}
          cache/lru-cache-factory)))
 
@@ -69,8 +69,13 @@
 (defn show
   []
   (fx/mount-renderer *state renderer)
-  (util/log-to-fn! :win-log #(event-handler {:event/type ::events/append-log
-                                             :log %})))
+  (util/log-to-fn! :win-log #(do (event-handler {:event/type ::events/append-log
+                                                 :fx/sync true
+                                                 :log %})
+
+                                 (event-handler {:event/type ::events/log-scroll
+                                                ;; :fx/sync true
+                                                 }))))
 
 (comment
   (show)
@@ -82,8 +87,8 @@
     )
 
   (event-handler {:event/type ::events/value-changed
-                  :key :log-auto-scroll
-                  :fx/event false})
+                  :key :log-scroll-top
+                  :fx/event 20000})
 
 
   (renderer)

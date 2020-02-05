@@ -114,16 +114,24 @@
   (change-context context key event))
 
 (defmethod event-handler ::append-log [{:keys [fx/context log]}]
-  (let [old-log (fx/sub context :logs)
-        auto-scroll (fx/sub context :log-auto-scroll)
-        scroll-top (fx/sub context :log-scroll-top)]
+  (let [old-log (fx/sub context :logs)]
     {:context (fx/swap-context context assoc
                                :logs (str old-log log)
+                               :log-scroll-top (fx/sub context :log-scroll-top))}))
+
+(defmethod event-handler ::log-scroll [{:keys [fx/context]}]
+  (let [auto-scroll (fx/sub context :log-auto-scroll)
+        scroll-top (fx/sub context :log-scroll-top)]
+    (prn "auto-scroll:" auto-scroll "  scroll-top:" scroll-top)
+    {:context (fx/swap-context context assoc
                                :log-scroll-top (if auto-scroll
-                                                 ##Inf
-                                                 scroll-top))}))
+                                                 ;; 必须使用随机值，跟上次不同，位置才会更新,否则界面不刷新
+                                                 ;; setText会重新设置scrollTop
+                                                 (- Integer/MAX_VALUE (rand-int 1000))
+                                                 (+ 1 scroll-top)))}))
 
 (defmethod event-handler ::auto-scroll [{:keys [fx/context fx/event key]}]
+  ;; 日志相关的事件处理中不能使用日志函数，会触发控件改变
   (let [old-sel (fx/sub context key)]
     (prn :event-auto-scroll key (not old-sel))
     (change-context context key (not old-sel))))
