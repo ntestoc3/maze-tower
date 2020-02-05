@@ -6,7 +6,8 @@
             [clojure.java.io :as io]
             [maze-tower.util :as util]
             [clojure.set :as set]
-            [me.raynes.fs :as fs])
+            [me.raynes.fs :as fs]
+            [taoensso.timbre :as log])
   (:import javafx.stage.FileChooser
            javafx.stage.FileChooser$ExtensionFilter
            javafx.stage.DirectoryChooser
@@ -112,12 +113,19 @@
 (defmethod event-handler ::value-changed [{:keys [fx/context fx/event key]}]
   (change-context context key event))
 
-(defmethod event-handler ::append-value [{:keys [fx/context fx/event key]}]
-  (let [old-v (fx/sub context key)]
-    {:context (fx/swap-context context assoc key (str old-v event))}))
+(defmethod event-handler ::append-log [{:keys [fx/context log]}]
+  (let [old-log (fx/sub context :logs)
+        auto-scroll (fx/sub context :log-auto-scroll)
+        scroll-top (fx/sub context :log-scroll-top)]
+    {:context (fx/swap-context context assoc
+                               :logs (str old-log log)
+                               :log-scroll-top (if auto-scroll
+                                                 ##Inf
+                                                 scroll-top))}))
 
 (defmethod event-handler ::auto-scroll [{:keys [fx/context fx/event key]}]
   (let [old-sel (fx/sub context key)]
+    (prn :event-auto-scroll key (not old-sel))
     (change-context context key (not old-sel))))
 
 (defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]

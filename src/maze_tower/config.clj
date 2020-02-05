@@ -21,10 +21,16 @@
 
 (def config (atom {}))
 
+(defn some-first
+  [& exps]
+  (if-some [r (first exps)]
+    r
+    (recur (rest exps))))
+
 (defn get-config
   "从全局配置和环境中 获取配置项k的值"
   ([k] (get-config k nil))
-  ([k default] (or
+  ([k default] (some-first
                 (get @config k)
                 (get env k)
                 default)))
@@ -32,7 +38,7 @@
 (defn get-in-config
   "从全局配置和环境中 获取配置path的值"
   [path]
-  (or
+  (some-first
    (get-in @config path)
    (get-in env path)))
 

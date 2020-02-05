@@ -1,13 +1,14 @@
 (ns maze-tower.views
   (:require [cljfx.api :as fx]
-            [cljfx.composite :as composite]
             [cljfx.ext.table-view :as ext-table-view]
             [clojure.java.io :as io]
             [maze-tower.events :as events]
             [maze-tower.util :as util]
             [maze-tower.maze-algo :as maze-algo]
             [maze-tower.subs :as subs]
-            [maze-tower.config :as config])
+            [maze-tower.config :as config]
+            [maze-tower.scroll-ext-prop :refer [with-scroll-prop]]
+            [taoensso.timbre :as log])
   (:import javafx.util.StringConverter))
 
 (def range-value-converter
@@ -115,31 +116,27 @@
                            :filter filter
                            :key key}}]})
 
-(defn log-context-menu [{:keys [context text-inst selected-check]}]
-  {:fx/type :context-menu
-   :items [{:fx/type :menu-item
-            :text "全选"
-            :on-action (fn [_] (.selectAll text-inst))}
-           {:fx/type :check-menu-item
-            :text "自动滚动"
-            :selected selected-check
-            :on-action {:event/type ::events/auto-scroll
-                        :key :log-auto-scroll}}]})
-
 (defn log-form [{:keys [fx/context]}]
-  (let [auto-scroll (fx/sub context :log-auto-scroll)]
-    {:fx/type :titled-pane
-     :text "日志记录"
-     ;;:collapsible false
-     :content {:fx/type fx/ext-on-instance-lifecycle
-               :on-created {:fx/type }#(->> (log-context-menu context % auto-scroll)
-                                 (.setContextMenu %))
-               :desc {:fx/type :text-area
-                      :editable false
-                      :text (fx/sub context :logs)
-                      :scroll-top (if auto-scroll
-                                    ##Inf
-                                    0)}}}))
+  {:fx/type :titled-pane
+   :text "日志记录"
+   ;;:collapsible false
+   :content
+   {:fx/type with-scroll-prop
+    :props {:on-scroll-top-changed {:event/type ::events/value-changed
+                                    :key :log-scroll-top
+                                    :fx/sync true}}
+    :desc {:fx/type :text-area
+           :editable false
+           :text (fx/sub context :logs)
+           :scroll-top (fx/sub context :log-scroll-top)
+           :context-menu {:fx/type :context-menu
+                          :items [{:fx/type :check-menu-item
+                                   :text "自动滚动"
+                                   :selected (fx/sub context :log-auto-scroll)
+                                   :on-action {:event/type ::events/auto-scroll
+                                               :fs/sync true
+                                               :key :log-auto-scroll}}]}
+           }}})
 
 (defn maze-config-form [{:keys [fx/context]}]
   (let [maze-gen-num (fx/sub context :maze-gen-num)]

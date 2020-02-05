@@ -38,7 +38,9 @@
           :maze-left-char (config/get-config :maze-left-char "3")
           :maze-right-char (config/get-config :maze-right-char "4")
           :logs ""
-          :log-auto-scroll true #_(config/get-config :log-auto-scroll true)
+          ;; bool值最好默认为false,因为get-config如果是false会返回nil,取默认值刚好
+          :log-auto-scroll (config/get-config :log-auto-scroll true)
+          :log-scroll-top (config/get-config :log-scroll-top 0)
           :showing true}
          cache/lru-cache-factory)))
 
@@ -67,18 +69,22 @@
 (defn show
   []
   (fx/mount-renderer *state renderer)
-  (util/log-to-fn! :win-log #(event-handler {:event/type ::events/append-value
-                                             :fx/event %
-                                             :key :logs})))
+  (util/log-to-fn! :win-log #(event-handler {:event/type ::events/append-log
+                                             :log %})))
 
 (comment
   (show)
 
   (log/info "test")
 
+  (doseq [i (range 20)]
+    (log/info "test" i)
+    )
+
   (event-handler {:event/type ::events/value-changed
-                  :key :maze-left-char
-                  :fx/event  "aac"})
+                  :key :log-auto-scroll
+                  :fx/event false})
+
 
   (renderer)
 
