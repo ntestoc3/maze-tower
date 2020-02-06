@@ -13,7 +13,8 @@
                  [clojure.java-time "0.3.2"]       ; datetime
                  [cprop/cprop "0.1.15"]            ;; env manage
 
-                 ;; 添加JavaFX的windows系统支持, mac如果要支持也需要添加依赖
+
+                 ;; 添加JavaFX的windows和mac系统支持
                  [org.openjfx/javafx-graphics "13" :classifier "win"]
                  [org.openjfx/javafx-graphics "13" :classifier "mac"]
                  ]
