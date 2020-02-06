@@ -92,6 +92,7 @@
 (defn gen-mazes
   ":output-start-index 为输出图片文件的开始索引编号"
   [{:keys [count output-dir output-start-index] :as maze-conf}]
+  (log/info :gen-mazes maze-conf)
   (fs/mkdirs output-dir)
   (map (fn [idx]
          (let [out-path (-> (fs/file output-dir (str "maze_" idx ".jpg"))
@@ -101,8 +102,6 @@
        (range output-start-index
               (+ output-start-index count))))
 
-(log/info "testo")
-
 (defn gen-tower
   "生成迷宫塔,返回解压密码序列
   :output-file 指定输出文件名
@@ -111,7 +110,8 @@
   :level 层数
   :direction-chars 四个方向对应的字符[上 下 左 右],如果为空，则使用默认方向字符
   :sort 是否按文件大小排序"
-  [{:keys [output-file first-file maze-infos level direction-chars sort]}]
+  [{:keys [output-file first-file maze-infos level direction-chars sort] :as opts}]
+  (log/info :gen-tower opts)
   (let [mazes (->> (shuffle maze-infos)
                    (take level))
         mazes (if sort
@@ -172,5 +172,7 @@
                       :sort true}))
 
   (test-tower ts "flag.jpg" "project.clj")
+
+  (log/info "gogo")
 
   )

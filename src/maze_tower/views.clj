@@ -246,12 +246,8 @@
                                       :fx/sync true}}
       :desc {:fx/type :text-area
              :editable false
-             :text (do
-                     (prn "log new text...")
-                     (fx/sub context :logs))
-             :scroll-top (do
-                           (prn "scroll-top...." log-scroll-top)
-                           log-scroll-top)
+             :text (fx/sub context :logs)
+             :scroll-top log-scroll-top
              :context-menu {:fx/type :context-menu
                             :items [{:fx/type :check-menu-item
                                      :text "自动滚动"

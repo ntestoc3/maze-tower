@@ -38,9 +38,8 @@
           :maze-left-char (config/get-config :maze-left-char "3")
           :maze-right-char (config/get-config :maze-right-char "4")
           :logs ""
-          ;; bool值最好默认为false,因为get-config如果是false会返回nil,取默认值刚好
           :log-auto-scroll (config/get-config :log-auto-scroll true)
-          :log-scroll-top 1000 #_(config/get-config :log-scroll-top 0)
+          :log-scroll-top (config/get-config :log-scroll-top 0)
           :showing true}
          cache/lru-cache-factory)))
 
@@ -55,6 +54,21 @@
         :context (fx/make-reset-effect *state) ;; 更新状态
         })))
 
+;;; 在事件处理中的日志输出，会被事件返回时的context覆盖掉,这里修改的值就不起作用
+(util/log-to-fn! :win-log #(let [context @*state]
+                            (let [old-log (fx/sub @*state :logs)]
+                              (swap! *state fx/swap-context assoc :logs (.concat old-log %)))
+                            (prn "logs send to gui!")
+                            ;; (Thread/sleep 50) ;; 通过延时来确保正确滚动
+                            (let [auto-scroll (fx/sub context :log-auto-scroll)
+                                  scroll-top (fx/sub context :log-scroll-top)]
+                              ;; (prn "auto-scroll:" auto-scroll "  scroll-top:" scroll-top)
+                              (swap! *state fx/swap-context assoc
+                                     :log-scroll-top (if auto-scroll
+                                                       ;; 必须使用随机值，跟上次不同，位置才会更新,否则界面不刷新
+                                                       ;; setText会重新设置scrollTop
+                                                       (- Integer/MAX_VALUE (rand-int 100))
+                                                       (+ 0.01 scroll-top))))))
 
 (def renderer
   (fx/create-renderer
@@ -68,14 +82,7 @@
 
 (defn show
   []
-  (fx/mount-renderer *state renderer)
-  (util/log-to-fn! :win-log #(do (event-handler {:event/type ::events/append-log
-                                                 :fx/sync true
-                                                 :log %})
-
-                                 (event-handler {:event/type ::events/log-scroll
-                                                ;; :fx/sync true
-                                                 }))))
+  (fx/mount-renderer *state renderer))
 
 (comment
   (show)

@@ -113,27 +113,10 @@
 (defmethod event-handler ::value-changed [{:keys [fx/context fx/event key]}]
   (change-context context key event))
 
-(defmethod event-handler ::append-log [{:keys [fx/context log]}]
-  (let [old-log (fx/sub context :logs)]
-    {:context (fx/swap-context context assoc
-                               :logs (str old-log log)
-                               :log-scroll-top (fx/sub context :log-scroll-top))}))
-
-(defmethod event-handler ::log-scroll [{:keys [fx/context]}]
-  (let [auto-scroll (fx/sub context :log-auto-scroll)
-        scroll-top (fx/sub context :log-scroll-top)]
-    (prn "auto-scroll:" auto-scroll "  scroll-top:" scroll-top)
-    {:context (fx/swap-context context assoc
-                               :log-scroll-top (if auto-scroll
-                                                 ;; 必须使用随机值，跟上次不同，位置才会更新,否则界面不刷新
-                                                 ;; setText会重新设置scrollTop
-                                                 (- Integer/MAX_VALUE (rand-int 1000))
-                                                 (+ 1 scroll-top)))}))
-
 (defmethod event-handler ::auto-scroll [{:keys [fx/context fx/event key]}]
   ;; 日志相关的事件处理中不能使用日志函数，会触发控件改变
   (let [old-sel (fx/sub context key)]
-    (prn :event-auto-scroll key (not old-sel))
+    ;; (prn :event-auto-scroll key (not old-sel))
     (change-context context key (not old-sel))))
 
 (defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]
@@ -179,6 +162,7 @@
           all-pic-files (map :image-path pics)]
       (doseq [f all-pic-files]
         (fs/delete f))
+      (log/info "all maze image deleted!")
       (change-context context
                       :maze-pic-infos []
                       :curr-pic-index 0))))
@@ -219,7 +203,6 @@
                                            (fx/sub context :maze-down-char)
                                            (fx/sub context :maze-left-char)
                                            (fx/sub context :maze-right-char)]})
-        (doto prn)
-        (maze/test-tower (str out-file) (fx/sub context :tower-top-file)))
+        #_(maze/test-tower (str out-file) (fx/sub context :tower-top-file)))
     (config/add-config! :last-save-dir (.getParent out-file))
     {}))
