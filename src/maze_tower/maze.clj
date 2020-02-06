@@ -135,8 +135,10 @@
                 output-file))
             first-file
             mazes)
-    (->> (reverse mazes)
-         (map (comp trans-pass :route)))))
+    (let [passes (->> (reverse mazes)
+                      (map (comp trans-pass :route)))]
+      (spit (str output-file ".pass.txt") (str/join "\n" passes))
+      passes)))
 
 (defn test-tower
   "测试解压是否正确"

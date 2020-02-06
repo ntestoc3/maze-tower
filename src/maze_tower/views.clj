@@ -1,13 +1,11 @@
 (ns maze-tower.views
   (:require [cljfx.api :as fx]
-            [cljfx.ext.table-view :as ext-table-view]
             [clojure.java.io :as io]
             [maze-tower.events :as events]
             [maze-tower.util :as util]
             [maze-tower.maze-algo :as maze-algo]
             [maze-tower.subs :as subs]
             [maze-tower.config :as config]
-            [maze-tower.scroll-ext-prop :refer [with-scroll-prop]]
             [taoensso.timbre :as log])
   (:import javafx.util.StringConverter))
 
@@ -234,28 +232,6 @@
                                          :max-height ##Inf
                                          :text (str (fx/sub context subs/pics-count))}]}]}]}))
 
-(defn log-form [{:keys [fx/context]}]
-  (let [log-scroll-top (fx/sub context :log-scroll-top)]
-    {:fx/type :titled-pane
-     :text "日志记录"
-     ;;:collapsible false
-     :content
-     {:fx/type with-scroll-prop
-      :props {:on-scroll-top-changed {:event/type ::events/value-changed
-                                      :key :log-scroll-top
-                                      :fx/sync true}}
-      :desc {:fx/type :text-area
-             :editable false
-             :text (fx/sub context :logs)
-             :scroll-top log-scroll-top
-             :context-menu {:fx/type :context-menu
-                            :items [{:fx/type :check-menu-item
-                                     :text "自动滚动"
-                                     :selected (fx/sub context :log-auto-scroll)
-                                     :on-action {:event/type ::events/auto-scroll
-                                                 :fs/sync true
-                                                 :key :log-auto-scroll}}]}
-             }}}))
 (defn function-form [{:keys [fx/context]}]
   {:fx/type :v-box
    :children [{:fx/type image-button
@@ -418,5 +394,4 @@
                            }
                   :bottom {:fx/type :v-box
                            :border-pane/margin 10
-                           :children [{:fx/type tower-gen-pane}
-                                      {:fx/type log-form}]}}}})
+                           :children [{:fx/type tower-gen-pane}]}}}})

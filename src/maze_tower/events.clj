@@ -113,12 +113,6 @@
 (defmethod event-handler ::value-changed [{:keys [fx/context fx/event key]}]
   (change-context context key event))
 
-(defmethod event-handler ::auto-scroll [{:keys [fx/context fx/event key]}]
-  ;; 日志相关的事件处理中不能使用日志函数，会触发控件改变
-  (let [old-sel (fx/sub context key)]
-    ;; (prn :event-auto-scroll key (not old-sel))
-    (change-context context key (not old-sel))))
-
 (defmethod event-handler ::pic-index-change [{:keys [fx/context fx/event key]}]
   (let [total-pics (fx/sub context subs/pics-count)
         new-idx (util/in-range-int event 0 (dec total-pics))]
