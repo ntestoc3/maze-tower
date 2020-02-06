@@ -253,6 +253,13 @@
        (with-open [in (io/input-stream (io/resource filename))]
          (io/copy in o-file))))))
 
+(defmacro with-exception-default
+  [default & body]
+  `(try ~@body
+        (catch Exception e#
+          (log/error e#)
+          ~default)))
+
 (comment
   (zip-file! "test.zip" ["maze.txt"] "123456")
 

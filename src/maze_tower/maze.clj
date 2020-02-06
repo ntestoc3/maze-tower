@@ -95,14 +95,15 @@
   ":output-start-index 为输出图片文件的开始索引编号"
   [{:keys [count output-dir output-start-index] :as maze-conf}]
   (log/info :gen-mazes maze-conf)
-  (fs/mkdirs output-dir)
-  (map (fn [idx]
-         (let [out-path (-> (fs/file output-dir (str "maze_" idx ".jpg"))
-                             str)]
-           (gen-maze-and-save (merge maze-conf
-                                     {:out-path out-path}))))
-       (range output-start-index
-              (+ output-start-index count))))
+  (util/with-exception-default nil
+    (fs/mkdirs output-dir)
+    (map (fn [idx]
+           (let [out-path (-> (fs/file output-dir (str "maze_" idx ".jpg"))
+                              str)]
+             (gen-maze-and-save (merge maze-conf
+                                       {:out-path out-path}))))
+         (range output-start-index
+                (+ output-start-index count)))))
 
 (defn gen-tower
   "生成迷宫塔,返回解压密码序列
@@ -114,33 +115,34 @@
   :sort 是否按文件大小排序"
   [{:keys [output-file first-file maze-infos level direction-chars sort] :as opts}]
   (log/info :gen-tower opts)
-  (let [mazes (->> (shuffle maze-infos)
-                   (take level))
-        mazes (if sort
-                (-> (sort-by (comp fs/size :image-path) mazes)
-                    reverse)
-                mazes)
-        ;; tmp-zip (str output-file ".zip")
-        pass-trans (zipmap default-direction-chars direction-chars)
-        trans-pass (fn [route]
-                     (if pass-trans
-                       (str/escape route pass-trans)
-                       route))]
-    (reduce (fn [prev-file {:keys [route image-path]}]
-              (let [password (trans-pass route)
-                    tmp-zip (str output-file "_tower.zip")]
-                (log/info :gen-tower "zip:" prev-file "pass:" password)
-                (util/zip-file! tmp-zip [prev-file] password)
-                (util/join-files! output-file image-path tmp-zip)
-                (fs/delete tmp-zip)
-                (Thread/sleep 200.)
-                output-file))
-            first-file
-            mazes)
-    (let [passes (->> (reverse mazes)
-                      (map (comp trans-pass :route)))]
-      (spit (str output-file ".pass.txt") (str/join "\n" passes))
-      passes)))
+  (util/with-exception-default nil
+    (let [mazes (->> (shuffle maze-infos)
+                     (take level))
+          mazes (if sort
+                  (-> (sort-by (comp fs/size :image-path) mazes)
+                      reverse)
+                  mazes)
+          ;; tmp-zip (str output-file ".zip")
+          pass-trans (zipmap default-direction-chars direction-chars)
+          trans-pass (fn [route]
+                       (if pass-trans
+                         (str/escape route pass-trans)
+                         route))]
+      (reduce (fn [prev-file {:keys [route image-path]}]
+                (let [password (trans-pass route)
+                      tmp-zip (fs/temp-name "maze" ".zip")]
+                  (log/info :gen-tower "zip:" prev-file "pass:" password)
+                  (util/zip-file! tmp-zip [prev-file] password)
+                  (util/join-files! output-file image-path tmp-zip)
+                  (fs/delete tmp-zip)
+                  (Thread/sleep 200.)
+                  output-file))
+              first-file
+              mazes)
+      (let [passes (->> (reverse mazes)
+                        (map (comp trans-pass :route)))]
+        (spit (str output-file ".pass.txt") (str/join "\n" passes))
+        passes))))
 
 (defn test-tower
   "测试解压是否正确"
