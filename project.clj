@@ -11,7 +11,11 @@
                  [com.taoensso/timbre "4.10.0"] ; logging
                  [clojure.java-time "0.3.2"] ; datetime
                  [cprop/cprop "0.1.15"] ;; env manage
+
+                 ;; 添加JavaFX的windows系统支持, mac支持也需要添加
+                 [org.openjfx/javafx-graphics "13" :classifier "win"]
                  ]
+  :omit-source true
   :main ^:skip-aot maze-tower.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

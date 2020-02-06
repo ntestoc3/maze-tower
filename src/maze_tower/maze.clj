@@ -1,13 +1,15 @@
 (ns maze-tower.maze
-  (:require [maze-tower.maze-algo :as maze-algo]
-            [maze-tower.grid :as grid]
-            [maze-tower.image :as image]
+  (:require [maze-tower.maze.maze-algo :as maze-algo]
+            [maze-tower.maze.grid :as grid]
+            [maze-tower.maze.image :as image]
             [me.raynes.fs :as fs]
             [clojure.java.io :as io]
             [maze-tower.util :as util]
             [clojure.string :as str]
             [taoensso.timbre :as log])
   (:import [javax.imageio ImageIO]))
+
+(def algos (keys maze-algo/algorithm-functions))
 
 (defn run-and-render [algorithm grid-size render-fn]
   (render-fn (algorithm (apply grid/make-grid grid-size))))
@@ -127,7 +129,7 @@
     (reduce (fn [prev-file {:keys [route image-path]}]
               (let [password (trans-pass route)
                     tmp-zip (str output-file "_tower.zip")]
-                (prn "zip:" prev-file "pass:" password)
+                (log/info :gen-tower "zip:" prev-file "pass:" password)
                 (util/zip-file! tmp-zip [prev-file] password)
                 (util/join-files! output-file image-path tmp-zip)
                 (fs/delete tmp-zip)
@@ -160,7 +162,7 @@
                       :output-dir "maze_images"
                       :output-start-index 10
                       :cell-size [10 30]
-                      :algo (first (keys maze-algo/algorithm-functions))
+                      :algo (first algos)
                       :rows [20 100]
                       :cols 30
                       :start-mark "./resources/start.png"

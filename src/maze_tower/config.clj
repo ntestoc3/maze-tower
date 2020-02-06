@@ -1,8 +1,11 @@
 (ns maze-tower.config
   (:require [cprop.core :refer [load-config]]
-            [cprop.source :as source]))
+            [cprop.source :as source]
+            [maze-tower.util :as util]))
 
 (def default-config "config.edn")
+
+(util/extract-resource! default-config)
 
 (defn read-curr-config
   "读取当前配置文件内容"

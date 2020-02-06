@@ -1,4 +1,4 @@
-(ns maze-tower.grid
+(ns maze-tower.maze.grid
   (:require [clojure.spec.alpha :as s]
             [clojure.set :as set]))
 

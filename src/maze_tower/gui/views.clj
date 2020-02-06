@@ -1,10 +1,10 @@
-(ns maze-tower.views
+(ns maze-tower.gui.views
   (:require [cljfx.api :as fx]
             [clojure.java.io :as io]
-            [maze-tower.events :as events]
+            [maze-tower.gui.events :as events]
+            [maze-tower.gui.subs :as subs]
             [maze-tower.util :as util]
-            [maze-tower.maze-algo :as maze-algo]
-            [maze-tower.subs :as subs]
+            [maze-tower.maze :as maze]
             [maze-tower.config :as config]
             [taoensso.timbre :as log])
   (:import javafx.util.StringConverter))
@@ -130,7 +130,7 @@
                              :on-value-changed {:event/type ::events/value-changed
                                                 :key :maze-algo
                                                 :fx/sync true}
-                             :items (keys maze-algo/algorithm-functions)
+                             :items maze/algos
                              :max-height ##Inf}
                             {:fx/type :label
                              :max-height ##Inf
@@ -376,6 +376,7 @@
   {:fx/type :stage
    :on-close-request {:event/type ::events/stop}
    :showing true
+   :icons [{:is (util/file-istream "taowa.png")}]
    :title "迷宫塔"
    :scene {:fx/type :scene
            :root {:fx/type  :border-pane

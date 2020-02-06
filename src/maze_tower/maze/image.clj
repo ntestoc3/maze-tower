@@ -1,12 +1,12 @@
-(ns maze-tower.image
+(ns maze-tower.maze.image
+  (:require [clojure.java.io :as io]
+            [maze-tower.maze.grid :as grid]
+            [maze-tower.util :as util])
   (:import [java.awt Color Graphics2D]
            [java.awt.image BufferedImage]
            [java.awt Image]
            java.awt.geom.AffineTransform
-           [javax.imageio ImageIO])
-  (:require [clojure.java.io :as io]
-            [maze-tower.grid :as grid]
-            [maze-tower.util :as util]))
+           [javax.imageio ImageIO]))
 
 ;; TODO: update this to work like the cljs version and use a RenderState
 ;; object and not require annotating the cells.

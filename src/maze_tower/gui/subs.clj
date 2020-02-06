@@ -1,6 +1,5 @@
-(ns maze-tower.subs
-  (:require [cljfx.api :as fx]
-            ))
+(ns maze-tower.gui.subs
+  (:require [cljfx.api :as fx]))
 
 (defn pics-count
   "获取迷宫图片总数"

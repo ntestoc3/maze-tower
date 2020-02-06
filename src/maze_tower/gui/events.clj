@@ -1,8 +1,8 @@
-(ns maze-tower.events
+(ns maze-tower.gui.events
   (:require [cljfx.api :as fx]
             [maze-tower.config :as config]
             [maze-tower.maze :as maze]
-            [maze-tower.subs :as subs]
+            [maze-tower.gui.subs :as subs]
             [clojure.java.io :as io]
             [maze-tower.util :as util]
             [clojure.set :as set]
@@ -133,7 +133,8 @@
                 :key :curr-pic-index}}))
 
 (defmethod event-handler ::stop [{:keys [fx/context fx/event]}]
-  (config/save-config!))
+  (config/save-config!)
+  (System/exit 0))
 
 (defmethod event-handler ::gen-maze [{:keys [fx/context fx/event]}]
   (let [old-mazes (fx/sub context :maze-pic-infos)

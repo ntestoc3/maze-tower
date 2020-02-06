@@ -3,9 +3,9 @@
             [cljfx.lifecycle :as lifecycle]
             [cljfx.coerce :as coerce]
             [clojure.core.cache :as cache]
-            [maze-tower.views :as views]
+            [maze-tower.gui.views :as views]
+            [maze-tower.gui.events :as events]
             [maze-tower.config :as config]
-            [maze-tower.events :as events]
             [maze-tower.util :as util]
             [taoensso.timbre :as log]))
 

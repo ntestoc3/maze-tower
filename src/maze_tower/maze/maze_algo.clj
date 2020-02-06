@@ -1,7 +1,7 @@
-(ns maze-tower.maze-algo
+(ns maze-tower.maze.maze-algo
   (:import  [clojure.lang PersistentQueue])
   (:require [clojure.set :as set]
-            [maze-tower.grid :as g]))
+            [maze-tower.maze.grid :as g]))
 
 (def algorithm-names
   #{"binary-tree"
