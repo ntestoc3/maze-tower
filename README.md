@@ -4,7 +4,6 @@ FIXME: description
 
 ## Installation
 
-Download from http://example.com/FIXME.
 
 ## Usage
 
@@ -31,6 +30,9 @@ FIXME: listing of options this app accepts.
 ## 图标来源
 https://icons8.cn
 https://www.flaticon.com
+
+## 迷宫生成代码
+https://github.com/glv/snergly
 
 ## License
 

@@ -96,7 +96,10 @@
                                          ["jpg" ["*.jpeg" "*.jpg"]]
                                          ["png" ["*.png"]]]})
 
-  (choose-file :save {:title "保存文件"})
+  ;; 保存文件filters没什么作用，不会自动添加后缀
+  (choose-file :save {:title "保存文件"
+                      :filters [["jpg" ["*.jpeg" "*.jpg"]]
+                                ["png" ["*.png"]]]})
 
   )
 
@@ -183,21 +186,24 @@
     (change-context context :tower-level new-level)))
 
 (defmethod event-handler ::gen-tower [{:keys [fx/context fx/event]}]
-  (when-let [out-file (choose-file :save
-                                   {:title "选择要保存的迷宫塔文件"
-                                    :init-dir (let [dir (config/get-config :last-save-dir "./")]
-                                                (if (fs/directory? dir)
-                                                  dir
-                                                  "./"))})]
-    (-> (maze/gen-tower {:output-file (str out-file)
-                         :first-file (fx/sub context :tower-top-file)
-                         :maze-infos (fx/sub context :maze-pic-infos)
-                         :level (fx/sub context :tower-level)
-                         :sort (fx/sub context :tower-sort-pic)
-                         :direction-chars [(fx/sub context :maze-up-char)
-                                           (fx/sub context :maze-down-char)
-                                           (fx/sub context :maze-left-char)
-                                           (fx/sub context :maze-right-char)]})
-        #_(maze/test-tower (str out-file) (fx/sub context :tower-top-file)))
-    (config/add-config! :last-save-dir (.getParent out-file))
+  (let [mazes (fx/sub context :maze-pic-infos)]
+    (if (empty? mazes)
+      (alert-box "请先生成一些迷宫图片")
+      (when-let [out-file (choose-file :save
+                                       {:title "选择要保存的迷宫塔文件"
+                                        :init-dir (let [dir (config/get-config :last-save-dir "./")]
+                                                    (if (fs/directory? dir)
+                                                      dir
+                                                      "./"))})]
+        (-> (maze/gen-tower {:output-file (str out-file)
+                             :first-file (fx/sub context :tower-top-file)
+                             :maze-infos mazes
+                             :level (fx/sub context :tower-level)
+                             :sort (fx/sub context :tower-sort-pic)
+                             :direction-chars [(fx/sub context :maze-up-char)
+                                               (fx/sub context :maze-down-char)
+                                               (fx/sub context :maze-left-char)
+                                               (fx/sub context :maze-right-char)]})
+            #_(maze/test-tower (str out-file) (fx/sub context :tower-top-file)))
+        (config/add-config! :last-save-dir (.getParent out-file))))
     {}))
