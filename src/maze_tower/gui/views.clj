@@ -397,6 +397,6 @@
                   :bottom {:fx/type :v-box
                            :spacing 10
                            ;; :style-class "tower-gen-pane"
-                           ;; :border-pane/margin 10
+                           :border-pane/margin 10
                            :children [{:fx/type :separator}
                                       {:fx/type tower-gen-pane}]}}}})

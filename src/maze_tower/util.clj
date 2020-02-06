@@ -42,6 +42,7 @@
           io/input-stream))
 
 (defn range?
+  "range-v是否为一个范围值"
   [range-v]
   (or (number? range-v)
       (set? range-v)
