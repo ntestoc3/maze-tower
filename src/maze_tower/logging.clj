@@ -12,7 +12,7 @@
                   (mutator/setter (fn [text-area [txt auto-scroll]]
                                     (let [scroll-pos (if auto-scroll
                                                        ##Inf
-                                                       (getScrollTop text-area))]
+                                                       (.getScrollTop text-area))]
                                       (prn "scroll pos:" scroll-pos)
                                       (doto text-area
                                         (.setText txt)

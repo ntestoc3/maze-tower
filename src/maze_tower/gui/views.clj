@@ -379,6 +379,7 @@
    :icons [{:is (util/file-istream "taowa.png")}]
    :title "迷宫塔"
    :scene {:fx/type :scene
+           ;; :stylesheets #{"maze.css"}
            :root {:fx/type  :border-pane
                   :min-width 900
                   :min-height 600
@@ -394,5 +395,8 @@
                            :border-pane/margin 10
                            }
                   :bottom {:fx/type :v-box
-                           :border-pane/margin 10
-                           :children [{:fx/type tower-gen-pane}]}}}})
+                           :spacing 10
+                           ;; :style-class "tower-gen-pane"
+                           ;; :border-pane/margin 10
+                           :children [{:fx/type :separator}
+                                      {:fx/type tower-gen-pane}]}}}})

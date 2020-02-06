@@ -5,7 +5,7 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [me.raynes/fs "1.4.6"] ;; file util
-                 [cljfx "1.6.2"] ;; javafx gui
+                 [cljfx "1.6.3"] ;; javafx gui
                  [org.clojure/core.cache "0.8.2"] ;; cache
                  [net.lingala.zip4j/zip4j "2.3.1"] ;; zip with password
                  [com.taoensso/timbre "4.10.0"] ; logging
