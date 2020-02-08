@@ -24,11 +24,12 @@
 
 (def config (atom {}))
 
-(defn some-first
+(defn- some-first
   [& exps]
   (if-some [r (first exps)]
     r
-    (recur (rest exps))))
+    (when (seq? exps)
+      (recur (next exps)))))
 
 (defn get-config
   "从全局配置和环境中 获取配置项k的值"

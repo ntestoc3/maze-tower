@@ -1,6 +1,5 @@
 (require '[cljfx.composite :as composite]
          '[cljfx.lifecycle :as lifecycle]
-         '[cljfx.coerce :as coerce]
          '[cljfx.api :as fx]
          '[cljfx.prop :as prop]
          '[cljfx.mutator :as mutator])
@@ -16,6 +15,7 @@
                                       (prn "scroll pos:" scroll-pos)
                                       (doto text-area
                                         (.setText txt)
+                                        (some-> .getParent .layout)
                                         (.setScrollTop scroll-pos)))))
                   lifecycle/scalar
                   :default ["" 0])
@@ -25,23 +25,30 @@
 (def *state
   (atom (fx/create-context
           {:logs ""
-           :auto-scroll true
+           :auto-scroll false
            :lbl-value "test log in event handler!"})))
 
+(import 'javafx.beans.value.ChangeListener)
 (defn log-form [{:keys [fx/context]}]
   (let [auto-scroll (fx/sub context :auto-scroll)]
     {:fx/type with-scroll-text-prop
      :props {:scroll-text [(fx/sub context :logs)
                            auto-scroll]}
-     :desc {:fx/type :text-area
-            :editable false
-            :context-menu {:fx/type :context-menu
-                           :items [{:fx/type :check-menu-item
-                                    :text "Auto Scroll"
-                                    :selected auto-scroll
-                                    :on-action {:event/type :event/auto-scroll-change
-                                                :value (not auto-scroll)}}]}
-            }}))
+     :desc {:fx/type fx/ext-on-instance-lifecycle
+            :on-created #(.addListener
+                          (.scrollTopProperty %)
+                          (reify javafx.beans.value.ChangeListener
+                            (changed [_ _ _ v]
+                              (clojure.pprint/pprint [v (:trace (Throwable->map (RuntimeException.)))]))))
+            :desc {:fx/type :text-area
+                   :editable false
+                   :context-menu {:fx/type :context-menu
+                                  :items [{:fx/type :check-menu-item
+                                           :text "Auto Scroll"
+                                           :selected auto-scroll
+                                           :on-action {:event/type :event/auto-scroll-change
+                                                       :value (not auto-scroll)}}]}
+                   }}}))
 
 ;;;;;;;; event-handler
 (defmulti event-handler :event/type)
