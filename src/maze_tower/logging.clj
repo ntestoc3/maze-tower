@@ -34,21 +34,15 @@
     {:fx/type with-scroll-text-prop
      :props {:scroll-text [(fx/sub context :logs)
                            auto-scroll]}
-     :desc {:fx/type fx/ext-on-instance-lifecycle
-            :on-created #(.addListener
-                          (.scrollTopProperty %)
-                          (reify javafx.beans.value.ChangeListener
-                            (changed [_ _ _ v]
-                              (clojure.pprint/pprint [v (:trace (Throwable->map (RuntimeException.)))]))))
-            :desc {:fx/type :text-area
-                   :editable false
-                   :context-menu {:fx/type :context-menu
-                                  :items [{:fx/type :check-menu-item
-                                           :text "Auto Scroll"
-                                           :selected auto-scroll
-                                           :on-action {:event/type :event/auto-scroll-change
-                                                       :value (not auto-scroll)}}]}
-                   }}}))
+     :desc {:fx/type :text-area
+            :editable false
+            :context-menu {:fx/type :context-menu
+                           :items [{:fx/type :check-menu-item
+                                    :text "Auto Scroll"
+                                    :selected auto-scroll
+                                    :on-action {:event/type :event/auto-scroll-change
+                                                :value (not auto-scroll)}}]}
+            }}))
 
 ;;;;;;;; event-handler
 (defmulti event-handler :event/type)
