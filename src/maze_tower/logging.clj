@@ -71,13 +71,14 @@
       (fx/wrap-co-effects
        {:fx/context (fx/make-deref-co-effect *state)})
       (fx/wrap-effects
-       {:context (fx/make-reset-effect *state)})))
+       {:context (fx/make-reset-effect *state)})
+      (fx/wrap-async)
+      ))
 
 ;;;;;;;;;;;;;;;; logging, Use functions instead of log appender
 (defn log
   [s]
   (real-event-handler {:event/type :event/add-log
-                       :fx/sync true
                        :log (str s "\n")}))
 
 (defmethod event-handler :event/button-click [{:keys [fx/context]}]
@@ -90,7 +91,8 @@
   {:fx/type :h-box
    :children [{:fx/type :button
                :text "test"
-               :on-action {:event/type :event/button-click}}
+               :on-action {:event/type :event/button-click
+                           :fx/sync true}}
               {:fx/type :label
                :text (fx/sub context :lbl-value)}]})
 
